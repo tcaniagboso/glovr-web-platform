@@ -1,0 +1,36 @@
+.patients-container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.patients-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.patient-card {
+    padding: 1rem 1.5rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.patient-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.patient-card h3 {
+    margin: 0;
+}
+
+.patient-card p {
+    margin: 0.3rem 0 0;
+    font-size: 0.9rem;
+    color: #555;
+}

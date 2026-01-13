@@ -1,0 +1,14 @@
+.progress-container {
+    padding: 2rem;
+}
+
+.graph-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 2rem;
+}
+
+.graph-card h2 {
+    margin-bottom: 1rem;
+}
