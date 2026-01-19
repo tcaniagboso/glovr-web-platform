@@ -26,13 +26,13 @@ export default function Signup() {
                     </div>
 
                     <div className="form-row">
-                        <label>Last Name:</label>
-                        <input type="text" placeholder="Last Name" required />
+                        <label>Middle Name or Initial:</label>
+                        <input type="text" placeholder="Middle Name or Initial" />
                     </div>
 
                     <div className="form-row">
-                        <label>Middle Name or Initial:</label>
-                        <input type="text" placeholder="Middle Name or Initial" />
+                        <label>Last Name:</label>
+                        <input type="text" placeholder="Last Name" required />
                     </div>
 
                     <div className="form-row">
