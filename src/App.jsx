@@ -1,26 +1,56 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home/Home";
-import Patient from "./pages/Patient/Patient";
-import Therapist from "./pages/Therapist/Therapist";
-import Patient_Exercises from "./pages/Patient/Exercises/Exercises";
-import Patient_Progress from "./pages/Patient/Progress/Progress";
-import Patient_History from "./pages/Patient/History/History";
-import Patient_Profile from "./pages/Patient/Profile/Profile";
-import Therapist_Profile from "./pages/Therapist/Profile/Profile";
-import Therapist_Patients from "./pages/Therapist/Patients/Patients";
+
+import Landing from "./pages/Landing/Landing";
+import Login from "./pages/Auth/Login";
+import Signup from "./pages/Auth/Signup";
+import Demo from "./pages/Demo/Demo";
+import Guest from "./pages/Guest/Guest";
+
+/* Layouts */
+import PatientLayout from "./pages/Patient/PatientLayout";
+import TherapistLayout from "./pages/Therapist/TherapistLayout";
+
+/* Patient Pages */
+import PatientHome from "./pages/Patient/Patient";
+import PatientExercises from "./pages/Patient/Exercises/Exercises";
+import PatientProgress from "./pages/Patient/Progress/Progress";
+import PatientHistory from "./pages/Patient/History/History";
+import PatientProfile from "./pages/Patient/Profile/Profile";
+
+/* Therapist Pages */
+import TherapistHome from "./pages/Therapist/Therapist";
+import TherapistProfile from "./pages/Therapist/Profile/Profile";
+import TherapistPatients from "./pages/Therapist/Patients/Patients";
 
 export default function App() {
+  const mode = "demo"; // later: auth / guest / demo
+
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/patient" element={<Patient />} />
-      <Route path="/therapist" element={<Therapist />} />
-      <Route path="/patient/exercises" element={<Patient_Exercises />} />
-      <Route path="/patient/progress" element={<Patient_Progress />} />
-      <Route path="/patient/history" element={<Patient_History />} />
-      <Route path="/patient/profile" element={<Patient_Profile />} />
-      <Route path="/therapist/profile" element={<Therapist_Profile />} />
-      <Route path="/therapist/patients" element={<Therapist_Patients />} />
+
+      {/* Public Pages */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/demo" element={<Demo />} />
+      <Route path="/guest" element={<Guest />} />
+
+      {/* Patient Dashboard */}
+      <Route path="/patient" element={<PatientLayout mode={mode} />}>
+        <Route index element={<PatientHome />} />
+        <Route path="exercises" element={<PatientExercises />} />
+        <Route path="progress" element={<PatientProgress />} />
+        <Route path="history" element={<PatientHistory />} />
+        <Route path="profile" element={<PatientProfile />} />
+      </Route>
+
+      {/* Therapist Dashboard */}
+      <Route path="/therapist" element={<TherapistLayout mode={mode} />}>
+        <Route index element={<TherapistHome />} />
+        <Route path="patients" element={<TherapistPatients />} />
+        <Route path="profile" element={<TherapistProfile />} />
+      </Route>
+
     </Routes>
   );
 }
