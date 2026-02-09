@@ -22,21 +22,21 @@ import TherapistHome from "./pages/Therapist/Therapist";
 import TherapistProfile from "./pages/Therapist/Profile/Profile";
 import TherapistPatients from "./pages/Therapist/Patients/Patients";
 
-export default function App() {
-  const mode = "demo"; // later: auth / guest / demo
+/* Dev (internal only) */
+import DeviceTest from "./pages/Dev/DeviceTest";
 
+export default function App() {
   return (
     <Routes>
-
-      {/* Public Pages */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/demo" element={<Demo />} />
       <Route path="/guest" element={<Guest />} />
 
-      {/* Patient Dashboard */}
-      <Route path="/patient" element={<PatientLayout mode={mode} />}>
+      <Route path="/dev/device-test" element={<DeviceTest />} />
+
+      <Route path="/patient" element={<PatientLayout />}>
         <Route index element={<PatientHome />} />
         <Route path="exercises" element={<PatientExercises />} />
         <Route path="progress" element={<PatientProgress />} />
@@ -44,13 +44,11 @@ export default function App() {
         <Route path="profile" element={<PatientProfile />} />
       </Route>
 
-      {/* Therapist Dashboard */}
-      <Route path="/therapist" element={<TherapistLayout mode={mode} />}>
+      <Route path="/therapist" element={<TherapistLayout />}>
         <Route index element={<TherapistHome />} />
         <Route path="patients" element={<TherapistPatients />} />
         <Route path="profile" element={<TherapistProfile />} />
       </Route>
-
     </Routes>
   );
 }
