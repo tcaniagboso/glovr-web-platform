@@ -22,3 +22,16 @@
 .patient-layout {
     padding: 2rem;
 }
+
+.signout-btn {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: #444;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.signout-btn:hover {
+    color: #d9534f;
+}

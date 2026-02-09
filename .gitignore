@@ -26,3 +26,8 @@ Thumbs.db
 # Editor settings
 .vscode/
 .idea/
+
+# Dev files
+*Dev*
+*dev*
+src/pages/Dev/

@@ -1,7 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "../../../supabaseClient";
 import "./History.css";
 
-const sessions = [
+/* Mock data for demo / guest */
+const mockSessions = [
     {
         id: 1,
         name: "Hand Grip Exercise",
@@ -26,24 +29,84 @@ const sessions = [
         duration: "20 mins",
         date: "Jan 10, 2026",
     },
-    {
-        id: 4,
-        name: "Pinch Control Exercise",
-        start: "16:45",
-        end: "17:00",
-        duration: "15 mins",
-        date: "Jan 08, 2026",
-    },
 ];
 
 export default function History() {
     const navigate = useNavigate();
+    const location = useLocation();
 
+    // Only used for preserving demo UI state in navigation
+    const params = new URLSearchParams(location.search);
+    const mode = params.get("mode");
+    const modeParam = mode ? `?mode=${mode}` : "";
+
+    const [sessions, setSessions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadHistory() {
+            // 1. Check auth state
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            // 2. Guest / Demo → mock data
+            if (!user) {
+                setSessions(mockSessions);
+                setLoading(false);
+                return;
+            }
+
+            // 3. Authenticated → database
+            const { data, error } = await supabase
+                .from("sessions")
+                .select("*")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error("Failed to load sessions:", error);
+                setSessions([]);
+            } else {
+                setSessions(data || []);
+            }
+
+            setLoading(false);
+        }
+
+        loadHistory();
+    }, []);
+
+    /* Loading state */
+    if (loading) {
+        return (
+            <div className="history-container">
+                <h1>History</h1>
+                <p>Loading sessions...</p>
+            </div>
+        );
+    }
+
+    /* Empty state (authenticated user, no sessions yet) */
+    if (sessions.length === 0) {
+        return (
+            <div className="history-container">
+                <h1>History</h1>
+                <p>No therapy sessions yet.</p>
+                <p>Your completed sessions will appear here once you start using GLOVR.</p>
+            </div>
+        );
+    }
+
+    /* Table view */
     return (
         <div className="history-container">
             <h1>History</h1>
+
             <table className="history-table">
-                <caption><h2>Past Therapy Sessions</h2></caption>
+                <caption>
+                    <h2>Past Therapy Sessions</h2>
+                </caption>
 
                 <thead>
                     <tr>
@@ -60,7 +123,11 @@ export default function History() {
                         <tr
                             key={session.id}
                             className="history-row"
-                            onClick={() => navigate(`/patient/history/${session.id}`)}
+                            onClick={() =>
+                                navigate(
+                                    `/patient/history/${session.id}${modeParam}`
+                                )
+                            }
                         >
                             <td>{session.name}</td>
                             <td>{session.date}</td>
