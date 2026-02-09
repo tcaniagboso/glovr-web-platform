@@ -23,7 +23,7 @@ import TherapistProfile from "./pages/Therapist/Profile/Profile";
 import TherapistPatients from "./pages/Therapist/Patients/Patients";
 
 /* Dev (internal only) */
-import DeviceTest from "./pages/Dev/DeviceTest";
+// import DeviceTest from "./pages/Dev/DeviceTest";
 
 export default function App() {
   return (
@@ -34,7 +34,7 @@ export default function App() {
       <Route path="/demo" element={<Demo />} />
       <Route path="/guest" element={<Guest />} />
 
-      <Route path="/dev/device-test" element={<DeviceTest />} />
+      {/* <Route path="/dev/device-test" element={<DeviceTest />} /> */}
 
       <Route path="/patient" element={<PatientLayout />}>
         <Route index element={<PatientHome />} />
