@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://tcaniagboso.github.io/glovr-web-platform",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
