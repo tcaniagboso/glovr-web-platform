@@ -21,6 +21,8 @@ import PatientProfile from "./pages/Patient/Profile/Profile";
 import TherapistHome from "./pages/Therapist/Therapist";
 import TherapistProfile from "./pages/Therapist/Profile/Profile";
 import TherapistPatients from "./pages/Therapist/Patients/Patients";
+import RequireAuth from "./components/RequireAuth";
+import RequireRole from "./components/RequireRole";
 
 /* Dev (internal only) */
 // import DeviceTest from "./pages/Dev/DeviceTest";
@@ -36,7 +38,13 @@ export default function App() {
 
       {/* <Route path="/dev/device-test" element={<DeviceTest />} /> */}
 
-      <Route path="/patient" element={<PatientLayout />}>
+      <Route path="/patient"
+        element={
+          <RequireAuth>
+            <RequireRole role="patient">
+              <PatientLayout />
+            </RequireRole>
+          </RequireAuth>}>
         <Route index element={<PatientHome />} />
         <Route path="exercises" element={<PatientExercises />} />
         <Route path="progress" element={<PatientProgress />} />
@@ -44,7 +52,13 @@ export default function App() {
         <Route path="profile" element={<PatientProfile />} />
       </Route>
 
-      <Route path="/therapist" element={<TherapistLayout />}>
+      <Route path="/therapist"
+        element={
+          <RequireAuth>
+            <RequireRole role="therapist">
+              <TherapistLayout />
+            </RequireRole>
+          </RequireAuth>}>
         <Route index element={<TherapistHome />} />
         <Route path="patients" element={<TherapistPatients />} />
         <Route path="profile" element={<TherapistProfile />} />
