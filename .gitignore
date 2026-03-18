@@ -31,3 +31,7 @@ Thumbs.db
 *Dev*
 *dev*
 src/pages/Dev/
+
+# supabase local stuff
+supabase/.temp
+supabase/.branches
