@@ -5,63 +5,139 @@ import "./Patients.css";
 
 /* Mock data for demo / guest */
 const mockPatients = [
-    {
-        id: 1,
-        name: "John Doe",
-        lastActive: "Jan 13, 2026",
-    },
-    {
-        id: 2,
-        name: "Alice Smith",
-        lastActive: "Jan 12, 2026",
-    },
-    {
-        id: 3,
-        name: "Michael Chen",
-        lastActive: "Jan 10, 2026",
-    },
-    {
-        id: 4,
-        name: "Sarah Johnson",
-        lastActive: "Jan 08, 2026",
-    },
+    { id: 1, name: "John Doe", lastActive: "Jan 13, 2026" },
+    { id: 2, name: "Alice Smith", lastActive: "Jan 12, 2026" },
+    { id: 3, name: "Michael Chen", lastActive: "Jan 10, 2026" },
+    { id: 4, name: "Sarah Johnson", lastActive: "Jan 08, 2026" },
 ];
 
 export default function Patients() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Only used to preserve demo UI state in navigation
     const params = new URLSearchParams(location.search);
     const mode = params.get("mode");
     const modeParam = mode ? `?mode=${mode}` : "";
 
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [email, setEmail] = useState("");
+    const [sending, setSending] = useState(false);
+    const [message, setMessage] = useState("");
+
+    async function sendInvite() {
+        setSending(true);
+        setMessage("");
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            console.error("User not logged in");
+            return;
+        }
+
+        const { error } = await supabase
+            .from("therapist_invites")
+            .insert({
+                therapist_id: user.id,
+                patient_email: email.toLowerCase()
+            });
+
+        if (error) {
+            if (error.code === "23505") {
+                setMessage("Invite already sent.");
+            } else {
+                setMessage("Error sending invite.");
+            }
+            setSending(false);
+            return;
+        }
+
+        // UI feedback
+        setMessage("Invite sent!");
+        setEmail("");
+
+        // background email
+        supabase.functions
+            .invoke("send-invite-email", { body: { email } })
+            .then(({ error }) => {
+                if (error) console.error("Email failed:", error);
+            });
+
+        setSending(false);
+    }
 
     useEffect(() => {
         async function loadPatients() {
-            // 1. Check auth state
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
+            const { data: { user } } = await supabase.auth.getUser();
 
-            // 2. Guest / Demo → mock patients
-            if (!user) {
+            // Demo / Guest
+            if (mode === "demo" || mode === "guest") {
                 setPatients(mockPatients);
                 setLoading(false);
                 return;
             }
 
-            // 3. Authenticated therapist → no data yet
-            setPatients([]);
+            if (!user) {
+                setPatients([]);
+                setLoading(false);
+                return;
+            }
+
+            try {
+                // 1 Get all patient_ids for this therapist
+                const { data: relationships, error: relError } = await supabase
+                    .from("therapist_patients")
+                    .select("patient_id")
+                    .eq("therapist_id", user.id);
+
+                if (relError) {
+                    console.error("Relationship error:", relError);
+                    setPatients([]);
+                    setLoading(false);
+                    return;
+                }
+
+                if (!relationships || relationships.length === 0) {
+                    setPatients([]);
+                    setLoading(false);
+                    return;
+                }
+
+                const patientIds = relationships.map(r => r.patient_id);
+
+                // 2 Fetch profiles
+                const { data: profiles, error: profileError } = await supabase
+                    .from("profiles")
+                    .select("id, first_name, last_name")
+                    .in("id", patientIds);
+
+                if (profileError) {
+                    console.error("Profile error:", profileError);
+                    setPatients([]);
+                    setLoading(false);
+                    return;
+                }
+
+                // 3 Format for UI
+                const formatted = profiles.map(p => ({
+                    id: p.id,
+                    name: `${p.first_name} ${p.last_name}`,
+                    lastActive: "Recently",
+                }));
+
+                setPatients(formatted);
+            } catch (err) {
+                console.error("Unexpected error:", err);
+                setPatients([]);
+            }
+
             setLoading(false);
         }
 
         loadPatients();
-    }, []);
+    }, [mode]);
 
-    /* Loading state */
     if (loading) {
         return (
             <div className="patients-container">
@@ -71,37 +147,48 @@ export default function Patients() {
         );
     }
 
-    /* Empty state for authenticated therapists */
-    if (patients.length === 0) {
-        return (
-            <div className="patients-container">
-                <h1>Patients</h1>
-                <p>No patients assigned yet.</p>
-                <p>Your patient list will appear once assignments are created.</p>
-            </div>
-        );
-    }
-
-    /* List view (demo / guest) */
     return (
         <div className="patients-container">
             <h1>Patients</h1>
-            <p>Select a patient to view their progress and history.</p>
 
-            <div className="patients-list">
-                {patients.map((patient) => (
-                    <div
-                        key={patient.id}
-                        className="patient-card"
-                        onClick={() =>
-                            navigate(`/therapist/patients/${patient.id}${modeParam}`)
-                        }
-                    >
-                        <h3>{patient.name}</h3>
-                        <p>Last Active: {patient.lastActive}</p>
-                    </div>
-                ))}
+            {/* Invite box ALWAYS visible */}
+            <div className="invite-box">
+                <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Patient email"
+                />
+
+                <button onClick={sendInvite} disabled={sending}>
+                    {sending ? "Sending..." : "Send Invite"}
+                </button>
+
+                {/* Message display */}
+                {message && <p className="status-message">{message}</p>}
             </div>
+
+            {/* Empty state */}
+            {patients.length === 0 ? (
+                <>
+                    <p>No patients assigned yet.</p>
+                    <p>Your patient list will appear once assignments are created.</p>
+                </>
+            ) : (
+                <div className="patients-list">
+                    {patients.map((patient) => (
+                        <div
+                            key={patient.id}
+                            className="patient-card"
+                            onClick={() =>
+                                navigate(`/therapist/patients/${patient.id}${modeParam}`)
+                            }
+                        >
+                            <h3>{patient.name}</h3>
+                            <p>Last Active: {patient.lastActive}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

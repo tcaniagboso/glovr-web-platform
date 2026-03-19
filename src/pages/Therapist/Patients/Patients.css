@@ -34,3 +34,25 @@
     font-size: 0.9rem;
     color: #555;
 }
+
+.invite-box {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.invite-box input {
+    flex: 1;
+    padding: 0.5rem;
+}
+
+.invite-box button {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.status-message {
+    margin-top: 8px;
+    font-size: 14px;
+    color: green;
+}
