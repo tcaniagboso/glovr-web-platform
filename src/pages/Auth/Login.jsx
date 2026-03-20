@@ -5,7 +5,8 @@ import "./Auth.css";
 
 export default function Login() {
     const navigate = useNavigate();
-    const [email, setEmail] = useState("");
+    const storedEmail = localStorage.getItem("invited_email") || "";
+    const [email, setEmail] = useState(storedEmail);
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -36,6 +37,41 @@ export default function Login() {
 
         const user = data.user;
 
+        // 2. Auto-link therapist if invite exists
+        const { data: invite } = await supabase
+            .from("therapist_invites")
+            .select("*")
+            .eq("patient_email", cleanedEmail)
+            .eq("status", "pending")
+            .maybeSingle();
+
+        if (invite) {
+            // Check if patient already has a therapist
+            const { data: existing } = await supabase
+                .from("therapist_patients")
+                .select("*")
+                .eq("patient_id", user.id)
+                .maybeSingle();
+
+            if (!existing) {
+                // Create relationship
+                await supabase.from("therapist_patients").insert({
+                    therapist_id: invite.therapist_id,
+                    patient_id: user.id
+                });
+
+                // Mark invite accepted
+                await supabase
+                    .from("therapist_invites")
+                    .update({ status: "accepted" })
+                    .eq("id", invite.id);
+
+                alert("You’ve been connected to your therapist!");
+            } else {
+                console.log("Patient already linked — skipping invite");
+            }
+        }
+
         // 2. Fetch profile
         const { data: profile, error: profileError } = await supabase
             .from("profiles")
@@ -51,8 +87,10 @@ export default function Login() {
 
         // 3. Redirect based on role
         if (profile.role === "therapist") {
+            localStorage.removeItem("invited_email");
             navigate("/therapist");
         } else {
+            localStorage.removeItem("invited_email");
             navigate("/patient");
         }
 
@@ -73,6 +111,7 @@ export default function Login() {
                             placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={!!storedEmail}
                             required
                         />
                     </div>

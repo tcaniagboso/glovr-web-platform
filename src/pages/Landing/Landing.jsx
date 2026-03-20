@@ -1,8 +1,25 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Landing.css";
 
 export default function Landing() {
     const navigate = useNavigate();
+    // const location = useLocation();
+
+    useEffect(() => {
+        const fullUrl = window.location.href;
+
+        console.log("FULL URL:", fullUrl);
+
+        const url = new URL(fullUrl);
+        const email = url.searchParams.get("email");
+
+        console.log("Extracted email:", email);
+
+        if (email) {
+            localStorage.setItem("invited_email", email.toLowerCase());
+        }
+    }, []);
 
     return (
         <div className="landing-container">

@@ -1,14 +1,18 @@
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "../../supabaseClient";
 import "./Auth.css";
 
 export default function Signup() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const storedEmail = localStorage.getItem("invited_email") || "";
     const [firstName, setFirstName] = useState("");
     const [middleName, setMiddleName] = useState("");
     const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState(storedEmail);
     const [role, setRole] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -81,7 +85,42 @@ export default function Signup() {
             return;
         }
 
-        // 3. Redirect
+        // 3.Check for pending invite
+        const { data: invite } = await supabase
+            .from("therapist_invites")
+            .select("*")
+            .eq("patient_email", cleanedEmail)
+            .eq("status", "pending")
+            .maybeSingle();
+
+        if (invite) {
+            // Check if already linked
+            const { data: existing } = await supabase
+                .from("therapist_patients")
+                .select("*")
+                .eq("patient_id", user.id)
+                .maybeSingle();
+
+            if (!existing) {
+                // Create relationship
+                await supabase.from("therapist_patients").insert({
+                    therapist_id: invite.therapist_id,
+                    patient_id: user.id
+                });
+
+                // Mark invite accepted
+                await supabase
+                    .from("therapist_invites")
+                    .update({ status: "accepted" })
+                    .eq("id", invite.id);
+
+                alert("You’ve been connected to your therapist!");
+            }
+        }
+
+        localStorage.removeItem("invited_email");
+
+        // 4. Redirect
         navigate(role === "therapist" ? "/therapist" : "/patient");
 
         setLoading(false);
@@ -133,6 +172,7 @@ export default function Signup() {
                             placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={!!storedEmail}
                             required
                         />
                     </div>
