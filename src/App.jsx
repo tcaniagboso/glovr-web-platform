@@ -21,6 +21,7 @@ import PatientProfile from "./pages/Patient/Profile/Profile";
 import TherapistHome from "./pages/Therapist/Therapist";
 import TherapistProfile from "./pages/Therapist/Profile/Profile";
 import TherapistPatients from "./pages/Therapist/Patients/Patients";
+import TherapistPatientSession from "./pages/Therapist/PatientSession/PatientSession";
 import RequireAuth from "./components/RequireAuth";
 import RequireRole from "./components/RequireRole";
 
@@ -61,6 +62,7 @@ export default function App() {
           </RequireAuth>}>
         <Route index element={<TherapistHome />} />
         <Route path="patients" element={<TherapistPatients />} />
+          <Route path="patients/:patientId" element={<TherapistPatientSession />} />
         <Route path="profile" element={<TherapistProfile />} />
       </Route>
     </Routes>
