@@ -1,13 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "../../supabaseClient";
 import "./Auth.css";
 
 export default function Signup() {
     const navigate = useNavigate();
-    const location = useLocation();
-    const params = new URLSearchParams(location.search);
     const storedEmail = localStorage.getItem("invited_email") || "";
     const [firstName, setFirstName] = useState("");
     const [middleName, setMiddleName] = useState("");
@@ -115,6 +112,8 @@ export default function Signup() {
                     .eq("id", invite.id);
 
                 alert("You’ve been connected to your therapist!");
+            } else {
+                console.log("Patient already linked — skipping invite");
             }
         }
 
