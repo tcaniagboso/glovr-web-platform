@@ -13,6 +13,22 @@ export default function SessionDetail() {
 
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [notes, setNotes] = useState("");
+    const [role, setRole] = useState(null);
+
+    async function handleSaveNotes() {
+        const { error } = await supabase
+            .from("sessions")
+            .update({ notes })
+            .eq("id", sessionId);
+
+        if (error) {
+            console.error("Failed to save notes:", error);
+            alert("Failed to save notes");
+        } else {
+            alert("Notes saved!");
+        }
+    }
 
     useEffect(() => {
         async function loadSession() {
@@ -26,11 +42,18 @@ export default function SessionDetail() {
                 return;
             }
 
-
             if (!user) {
                 setLoading(false);
                 return;
             }
+
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("id", user.id)
+                .single();
+
+            setRole(profile?.role);
 
             const targetId = patientId || user.id;
 
@@ -41,6 +64,8 @@ export default function SessionDetail() {
                     id,
                     started_at,
                     ended_at,
+                    status,
+                    notes,
                     exercises (name),
                     session_metrics (
                         repetitions_detected,
@@ -91,7 +116,8 @@ export default function SessionDetail() {
                     ? end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                     : "-",
                 duration,
-
+                status: data.status,
+                notes: data.notes || "",
                 metrics: {
                     repetitions_detected: m.repetitions_detected,
                     duration_seconds: m.duration_seconds,
@@ -116,6 +142,7 @@ export default function SessionDetail() {
             };
 
             setSession(formatted);
+            setNotes(formatted.notes || "");
             setLoading(false);
         }
 
@@ -127,6 +154,8 @@ export default function SessionDetail() {
 
     /* Not found */
     if (!session) return <p>Session not found.</p>;
+
+    if (!role) return <p>Loading role...</p>;
 
     return (
         <div className="session-container">
@@ -174,6 +203,33 @@ export default function SessionDetail() {
                         ))}
                 </div>
             </div>
+            {/* Notes */}
+            <div className="card">
+                <h2>Therapist Notes</h2>
+
+                {session.notes ? (
+                    <p>{session.notes}</p>
+                ) : (
+                    <p>No notes added yet.</p>
+                )}
+            </div>
+            {role === "therapist" && session.status === "completed" && (
+                <div className="card">
+                    <h2>Add Notes</h2>
+
+                    <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Write session notes..."
+                        rows={4}
+                        style={{ width: "100%", marginBottom: "10px" }}
+                    />
+
+                    <button onClick={handleSaveNotes}>
+                        Save Notes
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
