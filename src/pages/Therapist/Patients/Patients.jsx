@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 import "./Patients.css";
+import { withMode } from "../../../utils/utils";
 
 /* Mock data for demo / guest */
 const mockPatients = [
@@ -17,7 +18,6 @@ export default function Patients() {
 
     const params = new URLSearchParams(location.search);
     const mode = params.get("mode");
-    const modeParam = mode ? `?mode=${mode}` : "";
 
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -180,7 +180,7 @@ export default function Patients() {
                             key={patient.id}
                             className="patient-card"
                             onClick={() =>
-                                navigate(`/therapist/patients/${patient.id}${modeParam}`)
+                                navigate(withMode(`/therapist/patients/${patient.id}`, mode))
                             }
                         >
                             <h3>{patient.name}</h3>

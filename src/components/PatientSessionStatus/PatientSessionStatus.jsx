@@ -18,13 +18,13 @@ function humanizeStatus(status) {
     }
 }
 
-export default function PatientSessionStatus() {
+export default function PatientSessionStatus({ patientId: externalPatientId, role = "patient" }) {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const mode = params.get("mode");
 
     const [loading, setLoading] = useState(true);
-    const [patientProfileId, setPatientProfileId] = useState(null);
+    const [patientProfileId, setPatientProfileId] = useState(externalPatientId || null);
 
     const [sessionId, setSessionId] = useState(null);
     const [status, setStatus] = useState("ready");
@@ -52,6 +52,14 @@ export default function PatientSessionStatus() {
                 return;
             }
 
+            // If therapist passed patientId → use it
+            if (externalPatientId) {
+                setPatientProfileId(externalPatientId);
+                setLoading(false);
+                return;
+            }
+
+            // Otherwise fallback to logged-in patient
             const {
                 data: { user },
                 error,
@@ -213,7 +221,9 @@ export default function PatientSessionStatus() {
 
             <div className="status-value">
                 {status === "ready"
-                    ? "Waiting for your therapist to start a session."
+                    ? role === "therapist"
+                        ? "No active session for this patient."
+                        : "Waiting for your therapist to start a session."
                     : humanizeStatus(status)}
             </div>
 

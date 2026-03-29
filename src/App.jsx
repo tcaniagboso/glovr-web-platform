@@ -15,6 +15,7 @@ import PatientHome from "./pages/Patient/Patient";
 import PatientExercises from "./pages/Patient/Exercises/Exercises";
 import PatientProgress from "./pages/Patient/Progress/Progress";
 import PatientHistory from "./pages/Patient/History/History";
+import SessionDetail from "./pages/Patient/History/SessionDetail";
 import PatientProfile from "./pages/Patient/Profile/Profile";
 
 /* Therapist Pages */
@@ -22,6 +23,7 @@ import TherapistHome from "./pages/Therapist/Therapist";
 import TherapistProfile from "./pages/Therapist/Profile/Profile";
 import TherapistPatients from "./pages/Therapist/Patients/Patients";
 import TherapistPatientSession from "./pages/Therapist/PatientSession/PatientSession";
+import TherapistPatientOverview from "./pages/Therapist/PatientOverview/TherapistPatientOverview";
 import RequireAuth from "./components/RequireAuth";
 import RequireRole from "./components/RequireRole";
 
@@ -50,6 +52,7 @@ export default function App() {
         <Route path="exercises" element={<PatientExercises />} />
         <Route path="progress" element={<PatientProgress />} />
         <Route path="history" element={<PatientHistory />} />
+        <Route path="history/:sessionId" element={<SessionDetail />} />
         <Route path="profile" element={<PatientProfile />} />
       </Route>
 
@@ -59,11 +62,24 @@ export default function App() {
             <RequireRole role="therapist">
               <TherapistLayout />
             </RequireRole>
-          </RequireAuth>}>
+          </RequireAuth>
+        }>
+
         <Route index element={<TherapistHome />} />
         <Route path="patients" element={<TherapistPatients />} />
-          <Route path="patients/:patientId" element={<TherapistPatientSession />} />
+        <Route path="patients/:patientId" element={<TherapistPatientSession />} />
         <Route path="profile" element={<TherapistProfile />} />
+
+        <Route path="patients/:patientId">
+          <Route index element={<TherapistPatientOverview />} />
+          <Route path="session" element={<TherapistPatientSession />} />
+          <Route path="exercises" element={<PatientExercises />} />
+          <Route path="progress" element={<PatientProgress />} />
+          <Route path="history" element={<PatientHistory />} />
+          <Route path="history/:sessionId" element={<SessionDetail />} />
+          <Route path="profile" element={<PatientProfile />} />
+        </Route>
+
       </Route>
     </Routes>
   );

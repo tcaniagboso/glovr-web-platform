@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import DemoBanner from "../../components/DemoBanner";
 import { handleSignOut } from "../../utils/auth/signOut";
 import "./PatientLayout.css";
@@ -6,28 +6,39 @@ import "./PatientLayout.css";
 export default function PatientLayout() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { patientId } = useParams();
+
     const params = new URLSearchParams(location.search);
     const mode = params.get("mode");
     const modeParam = mode ? `?mode=${mode}` : "";
+
+    // dynamic base path
+    const basePath = patientId
+        ? `/therapist/patients/${patientId}`
+        : "/patient";
 
     return (
         <>
             {mode === "demo" && <DemoBanner />}
 
             <nav className="patient-nav">
-                <NavLink to={`/patient${modeParam}`} end>
+                <NavLink to={`${basePath}${modeParam}`} end>
                     Dashboard
                 </NavLink>
-                <NavLink to={`/patient/exercises${modeParam}`}>
+
+                <NavLink to={`${basePath}/exercises${modeParam}`}>
                     Exercises
                 </NavLink>
-                <NavLink to={`/patient/progress${modeParam}`}>
+
+                <NavLink to={`${basePath}/progress${modeParam}`}>
                     Progress
                 </NavLink>
-                <NavLink to={`/patient/history${modeParam}`}>
+
+                <NavLink to={`${basePath}/history${modeParam}`}>
                     History
                 </NavLink>
-                <NavLink to={`/patient/profile${modeParam}`}>
+
+                <NavLink to={`${basePath}/profile${modeParam}`}>
                     Profile
                 </NavLink>
 

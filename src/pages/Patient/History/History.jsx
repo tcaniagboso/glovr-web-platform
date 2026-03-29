@@ -1,40 +1,12 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
+import { mockSessions } from "../../../mocks/sessions";
 import "./History.css";
-
-/* Mock data for demo / guest */
-const mockSessions = [
-    {
-        id: 1,
-        name: "Hand Grip Exercise",
-        start: "14:32",
-        end: "14:45",
-        duration: "13 mins",
-        date: "Jan 13, 2026",
-    },
-    {
-        id: 2,
-        name: "Wrist Flexion Exercise",
-        start: "10:15",
-        end: "10:30",
-        duration: "15 mins",
-        date: "Jan 12, 2026",
-    },
-    {
-        id: 3,
-        name: "Finger Isolation Exercise",
-        start: "09:00",
-        end: "09:20",
-        duration: "20 mins",
-        date: "Jan 10, 2026",
-    },
-];
 
 export default function History() {
     const navigate = useNavigate();
     const location = useLocation();
-
     // Only used for preserving demo UI state in navigation
     const params = new URLSearchParams(location.search);
     const mode = params.get("mode");
@@ -43,39 +15,91 @@ export default function History() {
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const { patientId } = useParams();
+    const basePath = patientId
+        ? `/therapist/patients/${patientId}`
+        : "/patient";
+
     useEffect(() => {
         async function loadHistory() {
-            // 1. Check auth state
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
+            const { data: { user } } = await supabase.auth.getUser();
 
-            // 2. Guest / Demo → mock data
-            if (!user) {
+            if (mode === "demo" || mode === "guest") {
                 setSessions(mockSessions);
                 setLoading(false);
                 return;
             }
 
-            // 3. Authenticated → database
+            if (!user) {
+                setSessions([]);
+                setLoading(false);
+                return;
+            }
+
+            const targetId = patientId || user.id;
+
+            // console.log("MODE:", mode);
+            // console.log("PATIENT ID:", patientId);
             const { data, error } = await supabase
                 .from("sessions")
-                .select("*")
-                .eq("user_id", user.id)
-                .order("created_at", { ascending: false });
+                .select(`
+                    id,
+                    started_at,
+                    ended_at,
+                    status,
+                    exercises (name),
+                    session_metrics (duration_seconds)
+                `)
+                .eq("patient_id", targetId)
+                .eq("status", "completed")
+                .order("started_at", { ascending: false });
 
             if (error) {
                 console.error("Failed to load sessions:", error);
                 setSessions([]);
-            } else {
-                setSessions(data || []);
+                setLoading(false);
+                return;
             }
 
+            const formatted = (data || []).map((s) => {
+                const start = new Date(s.started_at);
+                const end = s.ended_at ? new Date(s.ended_at) : null;
+                const rawStatus = s.status || "unknown";
+                const status = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
+                // compute duration manually
+                let duration = "-";
+
+                if (end) {
+                    const diffMs = end - start; // milliseconds
+                    const diffMins = Math.floor(diffMs / (1000 * 60));
+
+                    if (diffMins < 60) {
+                        duration = `${diffMins} mins`;
+                    } else {
+                        const hours = Math.floor(diffMins / 60);
+                        const mins = diffMins % 60;
+                        duration = `${hours}h ${mins}m`;
+                    }
+                }
+
+                return {
+                    id: s.id,
+                    name: s.exercises?.name || "Unknown Exercise",
+                    date: start.toLocaleDateString(),
+                    start: start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                    end: end
+                        ? end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                        : "-",
+                    duration,
+                    status
+                };
+            });
+            setSessions(formatted);
             setLoading(false);
         }
 
         loadHistory();
-    }, []);
+    }, [patientId, mode]);
 
     /* Loading state */
     if (loading) {
@@ -103,41 +127,34 @@ export default function History() {
         <div className="history-container">
             <h1>History</h1>
 
-            <table className="history-table">
-                <caption>
-                    <h2>Past Therapy Sessions</h2>
-                </caption>
+            <div className="history-list">
+                {sessions.map((session) => (
+                    <div
+                        key={session.id}
+                        className="session-card"
+                        onClick={() =>
+                            navigate(`${basePath}/history/${session.id}${modeParam}`)
+                        }
+                    >
+                        <div className="session-title">
+                            {session.name}
+                        </div>
 
-                <thead>
-                    <tr>
-                        <th>Exercise Name</th>
-                        <th>Date</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Duration</th>
-                    </tr>
-                </thead>
+                        <div className="session-meta">
+                            {session.date}
+                        </div>
 
-                <tbody>
-                    {sessions.map((session) => (
-                        <tr
-                            key={session.id}
-                            className="history-row"
-                            onClick={() =>
-                                navigate(
-                                    `/patient/history/${session.id}${modeParam}`
-                                )
-                            }
-                        >
-                            <td>{session.name}</td>
-                            <td>{session.date}</td>
-                            <td>{session.start}</td>
-                            <td>{session.end}</td>
-                            <td>{session.duration}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                        <div className="session-meta">
+                            {session.start} - {session.end}
+                        </div>
+
+                        <div className="session-bottom">
+                            <span>Duration: {session.duration}</span>
+                            <span>{session.status}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
