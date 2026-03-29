@@ -9,12 +9,12 @@ export default function Landing() {
     useEffect(() => {
         const fullUrl = window.location.href;
 
-        console.log("FULL URL:", fullUrl);
+        // console.log("FULL URL:", fullUrl);
 
         const url = new URL(fullUrl);
         const email = url.searchParams.get("email");
 
-        console.log("Extracted email:", email);
+        // console.log("Extracted email:", email);
 
         if (email) {
             localStorage.setItem("invited_email", email.toLowerCase());

@@ -5,54 +5,47 @@
         "Open Sans", "Helvetica Neue", sans-serif;
 }
 
-.history-table {
-    width: 100%;
-    max-width: 1100px;
-    border-collapse: collapse;
+/* List wrapper */
+.history-list {
+    max-width: 900px;
     margin-top: 1.5rem;
-    background-color: white;
 }
 
-/* Header */
-.history-table thead {
-    background-color: #f2f2f2;
-}
-
-.history-table th {
-    padding: 0.9rem;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid #ccc;
-    border-right: 1px solid #ddd;
-}
-
-/* Remove right border from last column */
-.history-table th:last-child,
-.history-table td:last-child {
-    border-right: none;
-}
-
-/* Body cells */
-.history-table td {
-    padding: 0.8rem;
-    border-bottom: 1px solid #e0e0e0;
-    border-right: 1px solid #eee;
-}
-
-/* Zebra striping */
-.history-table tbody tr:nth-child(even) {
-    background-color: #fafafa;
-}
-
-/* Hover effect (clickable rows) */
-.history-row:hover {
-    background-color: #e9f1ff;
+/* Individual session card */
+.session-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Center numeric/time columns */
-.history-table td:nth-child(3),
-.history-table td:nth-child(4),
-.history-table td:nth-child(5) {
-    text-align: center;
+/* Hover effect */
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+/* Title */
+.session-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+/* Secondary info */
+.session-meta {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+/* Bottom row */
+.session-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 14px;
 }
