@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Patient.css";
+import PatientSessionStatus from "../../components/PatientSessionStatus/PatientSessionStatus";
 
 export default function Patient() {
     const navigate = useNavigate();
@@ -12,6 +13,8 @@ export default function Patient() {
     return (
         <div className="patient-container">
             <h1>Patient Dashboard</h1>
+
+            <PatientSessionStatus />
 
             <div className="card-grid">
                 <div

@@ -1,0 +1,74 @@
+.patient-session-container {
+    padding: 2rem;
+    max-width: 720px;
+}
+
+.session-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.session-status .label {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.session-status .value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2b2b2b;
+}
+
+.session-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.primary-btn {
+    background: #4f46e5;
+    border: none;
+    color: white;
+    font-weight: 700;
+    padding: 0.7rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.primary-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.danger-btn {
+    background: #d9534f;
+    border: none;
+    color: white;
+    font-weight: 700;
+    padding: 0.7rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.danger-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.status-message {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #444;
+}
+
+.status-success {
+    color: #2e8b57;
+    font-weight: 600;
+}
+

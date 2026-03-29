@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "./TherapistPatientOverview.css";
 import { withMode } from "../../../utils/utils";
+import PatientSessionStatus from "../../../components/PatientSessionStatus/PatientSessionStatus";
 
 export default function TherapistPatientOverview() {
     const { patientId } = useParams();
@@ -13,6 +14,8 @@ export default function TherapistPatientOverview() {
     return (
         <div className="overview-container">
             <h1>Patient Overview</h1>
+
+            <PatientSessionStatus patientId={patientId} role="therapist" />
 
             <div className="overview-cards">
                 <div
@@ -33,6 +36,16 @@ export default function TherapistPatientOverview() {
                 >
                     <h2>Progress</h2>
                     <p>View recovery trends</p>
+                </div>
+
+                <div
+                    className="card"
+                    onClick={() =>
+                        navigate(withMode(`/therapist/patients/${patientId}/session`, mode))
+                    }
+                >
+                    <h2>Session</h2>
+                    <p>Start or manage a session</p>
                 </div>
             </div>
         </div>

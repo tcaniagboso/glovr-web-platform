@@ -51,6 +51,7 @@ export default function History() {
                     session_metrics (duration_seconds)
                 `)
                 .eq("patient_id", targetId)
+                .eq("status", "completed")
                 .order("started_at", { ascending: false });
 
             if (error) {
