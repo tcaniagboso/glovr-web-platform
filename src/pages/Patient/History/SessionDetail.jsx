@@ -178,7 +178,7 @@ export default function SessionDetail() {
 
             {/* ROM */}
             <div className="card">
-                <h2>Range of Motion</h2>
+                <h2>Finger Flexion</h2>
                 <div className="grid">
                     {session.metrics?.rom &&
                         Object.entries(session.metrics.rom).map(([finger, value]) => (
