@@ -76,6 +76,7 @@ export default function SessionDetail() {
                         middle_rom,
                         ring_rom,
                         pinky_rom,
+                        wrist_pitch_rom,
                         thumb_peak_force,
                         index_peak_force,
                         middle_peak_force,
@@ -130,6 +131,8 @@ export default function SessionDetail() {
                         ring: m.ring_rom,
                         pinky: m.pinky_rom,
                     },
+
+                    wrist_pitch: m.wrist_pitch_rom,
 
                     peak_force: {
                         thumb: m.thumb_peak_force,
@@ -187,6 +190,18 @@ export default function SessionDetail() {
                                 <strong>{value ?? "-"}</strong>
                             </div>
                         ))}
+                </div>
+            </div>
+
+            {/* Wrist ROM */}
+            <div className="card">
+                <h2>Wrist Range of Motion</h2>
+
+                <div className="grid">
+                    <div className="metric-box">
+                        <p>Pitch</p>
+                        <strong>{session.metrics?.wrist_pitch_rom ?? "-"}</strong>
+                    </div>
                 </div>
             </div>
 
