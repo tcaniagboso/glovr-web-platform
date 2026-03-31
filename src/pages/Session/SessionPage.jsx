@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { supabase } from "../../../supabaseClient";
-import "./PatientSession.css";
+import { supabase } from "../../supabaseClient";
+import { games } from "../../data/games";
+import "./SessionPage.css";
 
 function humanizeStatus(status) {
     switch (status) {
@@ -19,7 +20,7 @@ function humanizeStatus(status) {
 }
 
 export default function PatientSession() {
-    const { patientId } = useParams();
+    const { patientId, gameId } = useParams();
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const mode = params.get("mode");
@@ -32,6 +33,10 @@ export default function PatientSession() {
     const [message, setMessage] = useState("");
 
     const timersRef = useRef([]);
+
+    const currentGame = games.find(g => g.id === gameId);
+
+    const isTherapist = !!patientId;
 
     const channelName = useMemo(() => {
         if (!sessionId) return null;
@@ -89,10 +94,15 @@ export default function PatientSession() {
         if (!patientId) return;
 
         async function loadLatestSession() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const targetPatientId = isTherapist ? patientId : user.id;
+
             const { data: sessions, error } = await supabase
                 .from("sessions")
                 .select("id, status")
-                .eq("patient_id", patientId)
+                .eq("patient_id", targetPatientId)
                 .order("created_at", { ascending: false })
                 .limit(1);
 
@@ -122,44 +132,42 @@ export default function PatientSession() {
         setMessage("");
 
         try {
-            if (mode === "demo" || mode === "guest") {
-                // Demo simulation: pending -> active -> completed
-                setStatus("pending");
-                const t1 = setTimeout(() => {
-                    setStatus("active");
-                }, 1200);
-                timersRef.current.push(t1);
+            const { data: { user } } = await supabase.auth.getUser();
 
-                const t2 = setTimeout(() => {
-                    setStatus("completed");
-                    setMessage("Session completed successfully.");
-                    setTimeout(() => {
-                        setSessionId(null);
-                        setStatus("ready");
-                        setMessage("");
-                    }, 1200);
-                }, 4200);
-                timersRef.current.push(t2);
+            if (!user) {
+                setMessage("You must be logged in.");
                 return;
             }
 
-            const {
-                data: { user },
-                error: userError,
-            } = await supabase.auth.getUser();
+            // get exercise from DB
+            const { data: exercise, error: exerciseError } = await supabase
+                .from("exercises")
+                .select("id")
+                .eq("slug", gameId)
+                .single();
 
-            if (userError || !user) {
-                setMessage("You must be logged in to start a session.");
+            if (exerciseError || !exercise) {
+                setMessage("Exercise not found.");
                 return;
             }
+
+            // create session
+            const insertPayload = isTherapist
+                ? {
+                    patient_id: patientId,
+                    therapist_id: user.id,
+                    exercise_id: exercise.id,
+                    status: "pending",
+                }
+                : {
+                    patient_id: user.id,
+                    exercise_id: exercise.id,
+                    status: "pending",
+                };
 
             const { data, error } = await supabase
                 .from("sessions")
-                .insert({
-                    patient_id: patientId,
-                    therapist_id: user.id,
-                    status: "pending",
-                })
+                .insert(insertPayload)
                 .select("id, status")
                 .single();
 
@@ -170,6 +178,7 @@ export default function PatientSession() {
 
             setSessionId(data.id);
             setStatus(data.status || "pending");
+
         } finally {
             setStarting(false);
         }
@@ -182,44 +191,75 @@ export default function PatientSession() {
         setMessage("");
 
         try {
+            // Demo / guest stays as-is (no DB)
             if (mode === "demo" || mode === "guest") {
-                // Demo simulation: active -> stop_requested -> completed
                 setStatus("stop_requested");
+
                 const t1 = setTimeout(() => {
                     setStatus("completed");
                     setMessage("Session completed successfully.");
+
                     setTimeout(() => {
                         setSessionId(null);
                         setStatus("ready");
                         setMessage("");
                     }, 1200);
                 }, 2000);
+
                 timersRef.current.push(t1);
                 return;
             }
 
-            const { error } = await supabase
-                .from("sessions")
-                .update({ status: "stop_requested" })
-                .eq("id", sessionId);
+            // Real DB flow
+            if (status === "pending") {
+                // No Python -> just complete immediately
+                const { error } = await supabase
+                    .from("sessions")
+                    .update({
+                        status: "completed",
+                        ended_at: new Date().toISOString(),
+                    })
+                    .eq("id", sessionId);
 
-            if (error) {
-                setMessage("Failed to request stop.");
-                return;
+                if (error) {
+                    setMessage("Failed to stop session.");
+                    return;
+                }
+
+                setStatus("completed");
+                setMessage("Session completed successfully.");
             }
 
-            setStatus("stop_requested");
+            else if (status === "active") {
+                // Python running -> request stop
+                const { error } = await supabase
+                    .from("sessions")
+                    .update({
+                        status: "stop_requested",
+                    })
+                    .eq("id", sessionId);
+
+                if (error) {
+                    setMessage("Failed to request stop.");
+                    return;
+                }
+
+                setStatus("stop_requested");
+                setMessage("Stopping session...");
+            }
+
         } finally {
             setStopping(false);
         }
     }
 
-    const showStopButton = status === "active";
-    const disableStart = starting || stopping || (sessionId && status !== "ready");
-
+    const showStopButton =
+        status === "pending" || status === "active";
     return (
         <div className="patient-session-container">
-            <h1>Patient Session</h1>
+            <h1>
+                {currentGame ? `${currentGame.name} Session` : "Session"}
+            </h1>
 
             <div className="session-panel">
                 <div className="session-status">
@@ -243,9 +283,13 @@ export default function PatientSession() {
                     <button
                         className="primary-btn"
                         onClick={handleStartSession}
-                        disabled={disableStart}
+                        disabled={starting || !!sessionId}
                     >
-                        {starting ? "Starting..." : "Start Session"}
+                        {starting
+                            ? "Starting..."
+                            : sessionId
+                                ? "Session Started"
+                                : "Start Session"}
                     </button>
 
                     {showStopButton && (
@@ -254,7 +298,7 @@ export default function PatientSession() {
                             onClick={handleStopSession}
                             disabled={stopping}
                         >
-                            {stopping ? "Requesting stop..." : "Stop Session"}
+                            {stopping ? "Stopping..." : "Stop Session"}
                         </button>
                     )}
                 </div>

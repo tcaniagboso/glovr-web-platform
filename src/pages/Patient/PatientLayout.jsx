@@ -26,8 +26,8 @@ export default function PatientLayout() {
                     Dashboard
                 </NavLink>
 
-                <NavLink to={`${basePath}/exercises${modeParam}`}>
-                    Exercises
+                <NavLink to={`${basePath}/games${modeParam}`}>
+                    Games
                 </NavLink>
 
                 <NavLink to={`${basePath}/progress${modeParam}`}>

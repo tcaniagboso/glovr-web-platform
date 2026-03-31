@@ -41,11 +41,11 @@ export default function TherapistPatientOverview() {
                 <div
                     className="card"
                     onClick={() =>
-                        navigate(withMode(`/therapist/patients/${patientId}/session`, mode))
+                        navigate(withMode(`/therapist/patients/${patientId}/games`, mode))
                     }
                 >
-                    <h2>Session</h2>
-                    <p>Start or manage a session</p>
+                    <h2>Games</h2>
+                    <p>Select a rehabilitation game</p>
                 </div>
             </div>
         </div>

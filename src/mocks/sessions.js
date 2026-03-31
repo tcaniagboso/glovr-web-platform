@@ -2,7 +2,7 @@
 export const mockSessions = [
     {
         id: 1,
-        name: "Hand Grip Exercise",
+        name: "Pinch Control",
         start: "14:32",
         end: "14:45",
         duration: "13 mins",
@@ -11,7 +11,7 @@ export const mockSessions = [
     },
     {
         id: 2,
-        name: "Wrist Flexion Exercise",
+        name: "Wrist Flexion & Extension",
         start: "10:15",
         end: "10:30",
         duration: "15 mins",
@@ -20,7 +20,7 @@ export const mockSessions = [
     },
     {
         id: 3,
-        name: "Finger Isolation Exercise",
+        name: "Grab Control",
         start: "09:00",
         end: "09:20",
         duration: "20 mins",
@@ -33,7 +33,7 @@ export const mockSessions = [
 export const mockSessionDetails = {
     1: {
         id: 1,
-        name: "Hand Grip Exercise",
+        name: "Pinch Control",
         date: "Jan 13, 2026",
         start: "14:32",
         end: "14:45",
@@ -47,7 +47,7 @@ export const mockSessionDetails = {
     },
     2: {
         id: 2,
-        name: "Wrist Flexion Exercise",
+        name: "Wrist Flexion & Extension",
         date: "Jan 12, 2026",
         start: "10:15",
         end: "10:30",
@@ -61,7 +61,7 @@ export const mockSessionDetails = {
     },
     3: {
         id: 3,
-        name: "Finger Isolation Exercise",
+        name: "Grab Control",
         date: "Jan 10, 2026",
         start: "09:00",
         end: "09:20",

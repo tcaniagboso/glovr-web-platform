@@ -1,5 +1,5 @@
 /* Page container */
-.exercises-container {
+.games-container {
     min-height: 100vh;
     padding: 3rem 4rem;
     background-color: #f7f9fc;
@@ -11,19 +11,19 @@
 }
 
 /* Page title */
-.exercises-container>h1 {
+.games-container>h1 {
     font-size: 2.8rem;
     font-weight: 700;
     margin-bottom: 2.5rem;
 }
 
 /* Section spacing */
-.exercises-container section {
+.games-container section {
     margin-bottom: 3rem;
 }
 
 /* Section headings */
-.exercises-container section h2 {
+.games-container section h2 {
     font-size: 1.6rem;
     font-weight: 600;
     margin-bottom: 1.2rem;
@@ -45,13 +45,13 @@
     cursor: pointer;
 
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Hover interaction */
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.15);
 }
 
 /* Card title */
@@ -66,4 +66,32 @@
     font-size: 0.95rem;
     color: #6b7280;
     line-height: 1.4;
+}
+
+/* Game image container */
+.game-image {
+    width: 100%;
+    height: 180px;
+    /* controls image space */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+    /* subtle background */
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+/* Image itself */
+.game-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.25s ease;
+}
+
+/* Image reacts when card is hovered */
+.card:hover .game-image img {
+    transform: scale(1.05);
 }

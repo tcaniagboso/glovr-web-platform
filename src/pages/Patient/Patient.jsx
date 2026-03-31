@@ -19,10 +19,10 @@ export default function Patient() {
             <div className="card-grid">
                 <div
                     className="card"
-                    onClick={() => navigate(`exercises${modeParam}`)}
+                    onClick={() => navigate(`games${modeParam}`)}
                 >
-                    <h2>Exercises</h2>
-                    <p>Start or continue rehab</p>
+                    <h2>Games</h2>
+                    <p>Select a rehabilitation game</p>
                 </div>
 
                 <div
