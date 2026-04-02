@@ -2,6 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import { games } from "../../data/games";
+import { formatMovement } from "../../utils/utils";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    ResponsiveContainer
+} from "recharts";
 import "./SessionPage.css";
 
 function humanizeStatus(status) {
@@ -31,6 +40,11 @@ export default function PatientSession() {
     const [starting, setStarting] = useState(false);
     const [stopping, setStopping] = useState(false);
     const [message, setMessage] = useState("");
+
+    const [liveMetrics, setLiveMetrics] = useState(null);
+    const lastReadingIdRef = useRef(null);
+    const smoothedRef = useRef(null);
+    const [liveHistory, setLiveHistory] = useState([]);
 
     const timersRef = useRef([]);
 
@@ -88,7 +102,7 @@ export default function PatientSession() {
         };
     }, [sessionId, channelName]);
 
-    // Optional: if therapist refreshes mid-session, resume by loading the most recent row.
+    // If therapist refreshes mid-session, resume by loading the most recent row.
     useEffect(() => {
         if (mode === "demo" || mode === "guest") return;
         if (!patientId) return;
@@ -127,6 +141,109 @@ export default function PatientSession() {
         loadLatestSession();
     }, [mode, patientId]);
 
+    useEffect(() => {
+        if (status === "ready") {
+            setLiveHistory([]);
+            smoothedRef.current = null;
+        }
+    }, [status]);
+
+    useEffect(() => {
+        if (!sessionId || status !== "active") return;
+
+        const interval = setInterval(async () => {
+            if (document.hidden) return;
+
+            const { data, error } = await supabase
+                .from("glove_readings")
+                .select("*")
+                .eq("session_id", sessionId)
+                .order("recorded_at", { ascending: false })
+                .limit(1)
+                .single();
+
+            if (!error && data) {
+                if (data.id !== lastReadingIdRef.current) {
+                    lastReadingIdRef.current = data.id;
+                    setLiveMetrics(data);
+                }
+            }
+        }, 300);
+
+        return () => clearInterval(interval);
+    }, [sessionId, status]);
+
+    const safe = (v) => (typeof v === "number" ? v : 0);
+    const liveComputed = useMemo(() => {
+        if (!liveMetrics) return null;
+
+        const gripRaw =
+            (safe(liveMetrics.thumb_force) +
+                safe(liveMetrics.index_force) +
+                safe(liveMetrics.middle_force) +
+                safe(liveMetrics.ring_force) +
+                safe(liveMetrics.pinky_force)) / 5;
+
+        const flexionRaw =
+            (safe(liveMetrics.thumb_flex) +
+                safe(liveMetrics.index_flex) +
+                safe(liveMetrics.middle_flex) +
+                safe(liveMetrics.ring_flex) +
+                safe(liveMetrics.pinky_flex)) / 5;
+
+        const pitchRaw = safe(liveMetrics.hand_pitch);
+
+        const alpha = 0.3; // smoothing factor
+
+        if (!smoothedRef.current) {
+            smoothedRef.current = {
+                grip: gripRaw,
+                flexion: flexionRaw,
+                pitch: pitchRaw,
+            };
+        } else {
+            smoothedRef.current = {
+                grip: alpha * gripRaw + (1 - alpha) * smoothedRef.current.grip,
+                flexion: alpha * flexionRaw + (1 - alpha) * smoothedRef.current.flexion,
+                pitch: alpha * pitchRaw + (1 - alpha) * smoothedRef.current.pitch,
+            };
+        }
+
+        const reps = liveHistory.length > 1
+            ? Math.abs(
+                liveHistory[liveHistory.length - 1].flexion -
+                liveHistory[liveHistory.length - 2].flexion
+            )
+            : 0;
+
+        return {
+            grip: Math.round(smoothedRef.current.grip),
+            flexion: Math.round(smoothedRef.current.flexion),
+            pitch: Math.round(smoothedRef.current.pitch),
+            reps,
+        };
+    }, [liveMetrics]);
+
+    useEffect(() => {
+        if (!liveComputed) return;
+
+        setLiveHistory(prev => {
+            const next = [
+                ...prev,
+                {
+                    ...liveComputed,
+                    // t: Date.now()
+                    t: prev.length
+                }
+            ];
+
+            // keep last 30 points
+            if (next.length > 30) next.shift();
+
+            return next;
+        });
+    }, [liveComputed]);
+
     async function handleStartSession() {
         setStarting(true);
         setMessage("");
@@ -138,6 +255,11 @@ export default function PatientSession() {
                 setMessage("You must be logged in.");
                 return;
             }
+
+            await supabase
+                .from("profiles")
+                .update({ last_active: new Date().toISOString() })
+                .eq("id", user.id);
 
             // get exercise from DB
             const { data: exercise, error: exerciseError } = await supabase
@@ -255,6 +377,7 @@ export default function PatientSession() {
 
     const showStopButton =
         status === "pending" || status === "active";
+
     return (
         <div className="patient-session-container">
             <h1>
@@ -303,6 +426,57 @@ export default function PatientSession() {
                     )}
                 </div>
             </div>
+
+            {status === "active" && !liveComputed && <p>Connecting to glove...</p>}
+
+            {status === "active" && liveComputed && (
+                <div className="live-panel">
+                    <h2>Live Performance</h2>
+
+                    <div className="live-grid">
+                        <div className="live-box">
+                            <p>Grip</p>
+                            <strong>{liveComputed.grip}</strong>
+                        </div>
+
+                        <div className="live-box">
+                            <p>Flexion</p>
+                            <strong>{liveComputed.flexion}°</strong>
+                        </div>
+
+                        <div className="live-box">
+                            <p>Pitch</p>
+                            <strong>{liveComputed.pitch}</strong>
+                        </div>
+
+                        <div className="live-box">
+                            <p>Movement Intensity</p>
+                            <strong>{formatMovement(liveComputed.reps)}</strong>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {status === "active" && liveHistory.length > 0 && (
+                <div className="live-panel">
+                    <h2>Live Trend</h2>
+
+                    <ResponsiveContainer width="100%" height={200}>
+                        <LineChart data={liveHistory}>
+                            <CartesianGrid strokeDasharray="3 3" />
+
+                            <XAxis
+                                dataKey="t"
+                                tickFormatter={() => ""}
+                            />
+                            <YAxis domain={["dataMin - 2", "dataMax + 2"]} allowDecimals={false} />
+
+                            <Line dataKey="grip" name="Grip" stroke="#6a5acd" dot={false} />
+                            <Line dataKey="flexion" name="Flexion" stroke="#2e8b57" dot={false} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
         </div>
     );
 }

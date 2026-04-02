@@ -5,6 +5,7 @@ export const mockSessions = [
         start: "14:32",
         end: "14:45",
         duration: "13 mins",
+        durationSeconds: 13 * 60,
         date: "Jan 27, 2026",
         status: "Completed",
     },
@@ -14,6 +15,7 @@ export const mockSessions = [
         start: "10:15",
         end: "10:30",
         duration: "15 mins",
+        durationSeconds: 15 * 60,
         date: "Jan 20, 2026",
         status: "Completed",
     },
@@ -23,6 +25,7 @@ export const mockSessions = [
         start: "09:00",
         end: "09:20",
         duration: "20 mins",
+        durationSeconds: 20 * 60,
         date: "Jan 13, 2026",
         status: "Completed",
     },
@@ -54,7 +57,7 @@ export const mockSessionDetails = {
             rom: { thumb: 45, index: 50, middle: 48, ring: 44, pinky: 40 },
 
             peak_force: { thumb: 20, index: 25, middle: 23, ring: 21, pinky: 18 },
-            duration_seconds: 200,
+            duration_seconds: 13 * 60,
         },
     },
 
@@ -82,7 +85,7 @@ export const mockSessionDetails = {
             rom: { thumb: 40, index: 47, middle: 45, ring: 42, pinky: 39 },
 
             peak_force: { thumb: 18, index: 22, middle: 20, ring: 19, pinky: 16 },
-            duration_seconds: 250,
+            duration_seconds: 15 * 60,
         },
     },
 
@@ -110,7 +113,7 @@ export const mockSessionDetails = {
             rom: { thumb: 48, index: 52, middle: 50, ring: 47, pinky: 44 },
 
             peak_force: { thumb: 22, index: 27, middle: 25, ring: 23, pinky: 20 },
-            duration_seconds: 300,
+            duration_seconds: 20 * 60,
         },
     },
 };
@@ -135,4 +138,24 @@ export const mockProgressData = {
         { week: "Week 2", value: 3 },
         { week: "Week 3", value: 2 },
     ],
+};
+
+export const mockReplayData = {
+    1: Array.from({ length: 40 }, (_, i) => ({
+        id: i,
+        recorded_at: i,
+        thumb_force: 200 + Math.sin(i / 3) * 50,
+        index_force: 210 + Math.sin(i / 3 + 1) * 50,
+        middle_force: 220 + Math.sin(i / 3 + 2) * 50,
+        ring_force: 200 + Math.sin(i / 3 + 3) * 40,
+        pinky_force: 180 + Math.sin(i / 3 + 4) * 30,
+
+        thumb_flex: 40 + Math.sin(i / 4) * 10,
+        index_flex: 45 + Math.sin(i / 4 + 1) * 10,
+        middle_flex: 50 + Math.sin(i / 4 + 2) * 10,
+        ring_flex: 42 + Math.sin(i / 4 + 3) * 8,
+        pinky_flex: 38 + Math.sin(i / 4 + 4) * 8,
+
+        hand_pitch: 10 + Math.sin(i / 5) * 5,
+    })),
 };

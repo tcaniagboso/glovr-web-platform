@@ -1,7 +1,8 @@
 import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
-import { mockSessionDetails } from "../../../mocks/sessions";
+import { mockSessionDetails, mockReplayData } from "../../../mocks/sessions";
+import { formatMovement, formatDuration } from "../../../utils/utils";
 import "./SessionDetail.css";
 
 export default function SessionDetail() {
@@ -15,6 +16,12 @@ export default function SessionDetail() {
     const [loading, setLoading] = useState(true);
     const [notes, setNotes] = useState("");
     const [role, setRole] = useState(null);
+
+    // Replay
+    const [replayData, setReplayData] = useState([]);
+    const [replayIndex, setReplayIndex] = useState(0);
+    const [playing, setPlaying] = useState(false);
+    const [speed, setSpeed] = useState(500);
 
     async function handleSaveNotes() {
         const { error } = await supabase
@@ -39,9 +46,9 @@ export default function SessionDetail() {
                 const mock = mockSessionDetails[Number(sessionId)];
 
                 setSession(mock || mockSessionDetails[1]);
+                setReplayData(mockReplayData[Number(sessionId)] || []);
 
                 setRole(patientId ? "therapist" : "patient");
-
                 setLoading(false);
                 return;
             }
@@ -102,6 +109,15 @@ export default function SessionDetail() {
                 setLoading(false);
                 return;
             }
+
+            // Replay data fetch
+            const { data: readings } = await supabase
+                .from("glove_readings")
+                .select("*")
+                .eq("session_id", sessionId)
+                .order("recorded_at", { ascending: true });
+
+            setReplayData(readings || []);
 
             // Transform DB → UI format
             const start = new Date(data.started_at);
@@ -166,6 +182,61 @@ export default function SessionDetail() {
         loadSession();
     }, [sessionId, mode]);
 
+    useEffect(() => {
+        if (!playing || replayData.length === 0) return;
+
+        const interval = setInterval(() => {
+            setReplayIndex((i) => {
+                if (i >= replayData.length - 1) {
+                    clearInterval(interval);
+
+                    // reset state
+                    setPlaying(false);
+                    return 0;
+                }
+                return i + 1;
+            });
+        }, speed);
+
+        return () => clearInterval(interval);
+    }, [playing, replayData, speed]);
+
+    const replayPoint = replayData[replayIndex];
+
+    const safe = (v) => (typeof v === "number" ? v : 0);
+
+    const replayComputed = replayPoint && {
+        grip: Math.round(
+            (safe(replayPoint.thumb_force) +
+                safe(replayPoint.index_force) +
+                safe(replayPoint.middle_force) +
+                safe(replayPoint.ring_force) +
+                safe(replayPoint.pinky_force)) / 5
+        ),
+        flexion: Math.round(
+            (safe(replayPoint.thumb_flex) +
+                safe(replayPoint.index_flex) +
+                safe(replayPoint.middle_flex) +
+                safe(replayPoint.ring_flex) +
+                safe(replayPoint.pinky_flex)) / 5
+        ),
+        pitch: Math.round(safe(replayPoint.hand_pitch)),
+    };
+
+    const prevPoint = replayData[replayIndex - 1];
+
+    const movement =
+        replayPoint && prevPoint
+            ? Math.abs(
+                safe(replayPoint.hand_pitch) - safe(prevPoint.hand_pitch)
+            )
+            : 0;
+    // const movementRounded = Math.round(movement * 10) / 10;
+
+    const percent = replayData.length
+        ? Math.round((replayIndex / replayData.length) * 100)
+        : 0;
+
     /* Loading */
     if (loading) return <p>Loading session...</p>;
 
@@ -183,7 +254,7 @@ export default function SessionDetail() {
                 <h2>Session Overview</h2>
                 <p>Date: {session.date}</p>
                 <p>Time: {session.start} - {session.end}</p>
-                <p>Duration: {session.duration}</p>
+                <p>Duration: {formatDuration(session.metrics.duration_seconds)}</p>
             </div>
 
             {/* Performance */}
@@ -235,6 +306,32 @@ export default function SessionDetail() {
                         ))}
                 </div>
             </div>
+            {/* Replay */}
+            {replayData.length > 0 && (
+                <div className="card">
+                    <h2>Replay Session</h2>
+
+                    <button onClick={() => setPlaying(!playing)}>
+                        {playing ? "Pause" : "Play"}
+                    </button>
+
+                    <div style={{ marginTop: "10px" }}>
+                        <p>Grip: {replayComputed?.grip ?? "-"}</p>
+                        <p>Flexion: {replayComputed?.flexion ?? "-"}°</p>
+                        <p>Pitch: {replayComputed?.pitch ?? "-"}</p>
+                        <p>Movement Intensity (est): {formatMovement(movement)}</p>
+                    </div>
+                    <div style={{ width: "100%", background: "#eee", height: "6px" }}>
+                        <div
+                            style={{
+                                width: `${percent}%`,
+                                background: "#4caf50",
+                                height: "100%",
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
             {/* Notes */}
             <div className="card">
                 <h2>Therapist Notes</h2>

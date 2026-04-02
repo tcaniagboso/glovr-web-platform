@@ -8,7 +8,7 @@ const demoTherapistProfile = {
     email: "demo@glovr.app",
     role: "therapist",
     specialty: "Hand & Upper Limb Rehabilitation",
-    patientsCount: 12,
+    patientsCount: 4,
     created_at: "2024-11-01",
 };
 
@@ -22,13 +22,14 @@ export default function Profile() {
                 data: { user },
             } = await supabase.auth.getUser();
 
-            // DEMO / GUEST fallback
+            // DEMO fallback
             if (!user) {
                 setProfile(demoTherapistProfile);
                 setLoading(false);
                 return;
             }
 
+            // 1. Get profile
             const { data, error } = await supabase
                 .from("profiles")
                 .select("*")
@@ -37,9 +38,25 @@ export default function Profile() {
 
             if (error) {
                 console.error(error);
-            } else {
-                setProfile(data);
+                setLoading(false);
+                return;
             }
+
+            // 2. Get patient count
+            const { count, error: countError } = await supabase
+                .from("therapist_patients")
+                .select("*", { count: "exact", head: true })
+                .eq("therapist_id", user.id);
+
+            if (countError) {
+                console.error(countError);
+            }
+
+            // 3. Merge into profile
+            setProfile({
+                ...data,
+                patientsCount: count ?? 0,
+            });
 
             setLoading(false);
         };

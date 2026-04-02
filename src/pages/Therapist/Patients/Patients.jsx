@@ -2,14 +2,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 import "./Patients.css";
-import { withMode } from "../../../utils/utils";
+import { withMode, formatLastActive } from "../../../utils/utils";
 
 /* Mock data for demo / guest */
 const mockPatients = [
-    { id: 1, name: "John Doe", lastActive: "Jan 13, 2026" },
-    { id: 2, name: "Alice Smith", lastActive: "Jan 12, 2026" },
-    { id: 3, name: "Michael Chen", lastActive: "Jan 10, 2026" },
-    { id: 4, name: "Sarah Johnson", lastActive: "Jan 08, 2026" },
+    { id: 1, name: "John Doe", lastActive: "10 hrs ago" },
+    { id: 2, name: "Alice Smith", lastActive: "3 days ago" },
+    { id: 3, name: "Michael Chen", lastActive: "Recently" },
+    { id: 4, name: "Sarah Johnson", lastActive: "Just now" },
 ];
 
 export default function Patients() {
@@ -109,7 +109,7 @@ export default function Patients() {
                 // 2 Fetch profiles
                 const { data: profiles, error: profileError } = await supabase
                     .from("profiles")
-                    .select("id, first_name, last_name")
+                    .select("id, first_name, last_name, last_active")
                     .in("id", patientIds);
 
                 if (profileError) {
@@ -123,7 +123,7 @@ export default function Patients() {
                 const formatted = profiles.map(p => ({
                     id: p.id,
                     name: `${p.first_name} ${p.last_name}`,
-                    lastActive: "Recently",
+                    lastActive: formatLastActive(p.last_active),
                 }));
 
                 setPatients(formatted);

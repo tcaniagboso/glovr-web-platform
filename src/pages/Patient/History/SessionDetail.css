@@ -26,6 +26,12 @@
     font-size: 18px;
 }
 
+.card button {
+    margin-bottom: 10px;
+    background: #4f46e5;
+    color: white;
+}
+
 /* Grid for metrics */
 .grid {
     display: grid;

@@ -82,6 +82,11 @@ export default function Signup() {
             return;
         }
 
+        await supabase
+            .from("profiles")
+            .update({ last_active: new Date().toISOString() })
+            .eq("id", user.id);
+
         // 3.Check for pending invite
         const { data: invite } = await supabase
             .from("therapist_invites")

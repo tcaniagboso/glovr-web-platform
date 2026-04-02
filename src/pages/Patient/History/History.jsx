@@ -2,6 +2,7 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 import { mockSessions } from "../../../mocks/sessions";
+import { formatDuration } from "../../../utils/utils";
 import "./History.css";
 
 export default function History() {
@@ -68,6 +69,7 @@ export default function History() {
                 const status = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
                 // compute duration manually
                 let duration = "-";
+                const durationSeconds = s.session_metrics?.duration_seconds;
 
                 if (end) {
                     const diffMs = end - start; // milliseconds
@@ -91,6 +93,7 @@ export default function History() {
                         ? end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                         : "-",
                     duration,
+                    durationSeconds,
                     status
                 };
             });
@@ -149,7 +152,7 @@ export default function History() {
                         </div>
 
                         <div className="session-bottom">
-                            <span>Duration: {session.duration}</span>
+                            <span>Duration: {formatDuration(session.durationSeconds)}</span>
                             <span>{session.status}</span>
                         </div>
                     </div>

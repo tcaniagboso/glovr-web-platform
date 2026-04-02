@@ -70,3 +70,22 @@
 .graph-card h2 {
     margin-bottom: 1rem;
 }
+
+.tooltip {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+
+    pointer-events: auto;
+}
+
+.tooltip button {
+    margin-top: 6px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    background: #4f46e5;
+    color: white;
+    border: none;
+}

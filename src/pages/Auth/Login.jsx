@@ -37,6 +37,11 @@ export default function Login() {
 
         const user = data.user;
 
+        await supabase
+            .from("profiles")
+            .update({ last_active: new Date().toISOString() })
+            .eq("id", user.id);
+
         // 2. Auto-link therapist if invite exists
         const { data: invite } = await supabase
             .from("therapist_invites")
