@@ -37,7 +37,11 @@ export default function SessionDetail() {
             // Guest / Demo → mock data
             if (mode === "demo" || mode === "guest") {
                 const mock = mockSessionDetails[Number(sessionId)];
+
                 setSession(mock || mockSessionDetails[1]);
+
+                setRole(patientId ? "therapist" : "patient");
+
                 setLoading(false);
                 return;
             }
@@ -77,6 +81,10 @@ export default function SessionDetail() {
                         ring_rom,
                         pinky_rom,
                         wrist_pitch_rom,
+                        wrist_flexion,
+                        wrist_extension,
+                        wrist_interior_roll,
+                        wrist_exterior_roll,
                         thumb_peak_force,
                         index_peak_force,
                         middle_peak_force,
@@ -132,7 +140,13 @@ export default function SessionDetail() {
                         pinky: m.pinky_rom,
                     },
 
-                    wrist_pitch: m.wrist_pitch_rom,
+                    wrist: {
+                        pitch: m.wrist_pitch_rom,
+                        flexion: m.wrist_flexion,
+                        extension: m.wrist_extension,
+                        interior_roll: m.wrist_interior_roll,
+                        exterior_roll: m.wrist_exterior_roll,
+                    },
 
                     peak_force: {
                         thumb: m.thumb_peak_force,
@@ -198,10 +212,13 @@ export default function SessionDetail() {
                 <h2>Wrist Range of Motion</h2>
 
                 <div className="grid">
-                    <div className="metric-box">
-                        <p>Pitch</p>
-                        <strong>{session.metrics?.wrist_pitch_rom ?? "-"}</strong>
-                    </div>
+                    {session.metrics?.wrist &&
+                        Object.entries(session.metrics.wrist).map(([key, value]) => (
+                            <div key={key} className="metric-box">
+                                <p>{key.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}</p>
+                                <strong>{value ?? "-"}</strong>
+                            </div>
+                        ))}
                 </div>
             </div>
 

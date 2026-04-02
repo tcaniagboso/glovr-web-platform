@@ -5,6 +5,61 @@
         "Open Sans", "Helvetica Neue", sans-serif;
 }
 
+.insights-card {
+    background: white;
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.insights-card ul {
+    padding-left: 18px;
+}
+
+.insights-card li {
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* .insights-card li:first-child {
+    font-size: 1.1rem;
+    font-weight: 700;
+} */
+
+/* COLORS */
+.insight-positive {
+    color: #2e8b57;
+}
+
+.insight-negative {
+    color: #d9534f;
+}
+
+.insight-neutral {
+    color: #444;
+}
+
+.progress-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.progress-tabs button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    background: #e5e7eb;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.progress-tabs .active-tab {
+    background: #4f46e5;
+    color: white;
+}
+
 .graph-card {
     background: white;
     padding: 1.5rem;
