@@ -767,7 +767,7 @@ export default function Progress() {
                     </div>
 
                     <div className="graph-card">
-                        <h2>Wrist Mobility (All Axes)</h2>
+                        <h2>Wrist Orientation (Pitch)</h2>
 
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.wristAll}>
@@ -780,7 +780,7 @@ export default function Progress() {
                                     height={60}
                                 />
 
-                                <YAxis domain={["dataMin - 5", "dataMax + 5"]} />
+                                <YAxis tickFormatter={(v) => Math.round(v)} />
 
                                 <Tooltip
                                     content={
@@ -795,7 +795,47 @@ export default function Progress() {
                                     wrapperStyle={{ pointerEvents: "auto" }}
                                 />
 
-                                <Line dataKey="pitch" name="Pitch" stroke="#6a5acd" dot={{ r: 5 }} />
+                                <Line
+                                    dataKey="pitch"
+                                    name="Pitch"
+                                    stroke="#6a5acd"
+                                    strokeWidth={3}
+                                    dot={{ r: 5 }}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className="graph-card">
+                        <h2>Wrist Range of Motion</h2>
+
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={data.wristAll}>
+                                <CartesianGrid strokeDasharray="3 3" />
+
+                                <XAxis
+                                    dataKey="session"
+                                    angle={-30}
+                                    textAnchor="end"
+                                    height={60}
+                                />
+
+                                <YAxis tickFormatter={(v) => Math.round(v)} />
+
+                                <Tooltip
+                                    content={
+                                        <CustomTooltip
+                                            role={role}
+                                            patientId={targetId}
+                                            mode={mode}
+                                        />
+                                    }
+                                    cursor={{ stroke: "#ccc" }}
+                                    isAnimationActive={false}
+                                    wrapperStyle={{ pointerEvents: "auto" }}
+                                    offset={20}
+                                />
+
                                 <Line dataKey="flexion" name="Flexion" stroke="#00b894" dot={{ r: 5 }} />
                                 <Line dataKey="extension" name="Extension" stroke="#ff7675" dot={{ r: 5 }} />
                                 <Line dataKey="interior_roll" name="Interior Roll" stroke="#fdcb6e" dot={{ r: 5 }} />
