@@ -40,6 +40,11 @@ export const mockSessionDetails = {
         start: "14:32",
         end: "14:45",
         duration: "13 mins",
+        exercise_id: "pinch-control",
+        exercises: {
+            name: "Pinch Control",
+            slug: "pinch-control",
+        },
         metrics: {
             repetitions_detected: 18,
             symmetry_score: 0.82,
@@ -69,6 +74,11 @@ export const mockSessionDetails = {
         start: "10:15",
         end: "10:30",
         duration: "15 mins",
+        exercise_id: "wrist-flexion-extension",
+        exercises: {
+            name: "Wrist Flexion & Extension",
+            slug: "wrist-flexion-extension",
+        },
         metrics: {
             repetitions_detected: 22,
             symmetry_score: 0.76,
@@ -97,6 +107,11 @@ export const mockSessionDetails = {
         start: "09:00",
         end: "09:20",
         duration: "20 mins",
+        exercise_id: "grab-control",
+        exercises: {
+            name: "Grab Control",
+            slug: "grab-control",
+        },
         metrics: {
             repetitions_detected: 25,
             symmetry_score: 0.88,

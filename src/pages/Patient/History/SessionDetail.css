@@ -20,6 +20,16 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
+/* Transparency card (explanations) */
+.transparency-card {
+    background: #fafafa;
+    border: 1px solid #eee;
+}
+
+.transparency-card h2 {
+    color: #374151;
+}
+
 /* Titles */
 .card h2 {
     margin-bottom: 10px;
@@ -55,4 +65,36 @@
 
 .metric-box strong {
     font-size: 18px;
+}
+
+/* Transparency details */
+.transparency-card details {
+    margin-bottom: 10px;
+    padding: 4px;
+}
+
+.transparency-card summary {
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.transparency-card details:hover {
+    background: #f3f4f6;
+    border-radius: 6px;
+}
+
+/* Paragraph spacing inside transparency */
+.transparency-card p {
+    margin-top: 6px;
+    line-height: 1.4;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* "Why it matters" text */
+.why {
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-style: italic;
 }

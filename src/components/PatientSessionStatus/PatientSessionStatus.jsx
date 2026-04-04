@@ -6,7 +6,7 @@ import "./PatientSessionStatus.css";
 function humanizeStatus(status) {
     switch (status) {
         case "pending":
-            return "Pending (waiting for Python)";
+            return "Connecting...";
         case "active":
             return "Active (recording)";
         case "stop_requested":

@@ -233,18 +233,18 @@ function computeInsights(data) {
 
             if (diff > 0) {
                 insights.push({
-                    text: `Grip strength increased by ${formatted}%`,
+                    text: `Hand strength increased by ${formatted}%`,
                     type: "positive",
                 });
             } else if (diff < 0) {
                 insights.push({
-                    text: `Grip strength decreased by ${formatted}%`,
+                    text: `Hand strength decreased by ${formatted}%`,
                     type: "negative",
                 });
             }
         } else {
             insights.push({
-                text: "Grip trend unavailable",
+                text: "Hand strength trend unavailable",
                 type: "neutral",
             });
         }
@@ -421,6 +421,9 @@ export default function Progress() {
     const role = patientId ? "therapist" : "patient";
     const [view, setView] = useState("overview");
 
+    const [selectedGame, setSelectedGame] = useState("all");
+    const [gameOptions, setGameOptions] = useState([]);
+
     useEffect(() => {
         async function loadProgress() {
             // Demo / Guest → mock data
@@ -428,6 +431,8 @@ export default function Progress() {
                 const mockSessionsArray = Object.values(mockSessionDetails).map(s => ({
                     id: s.id,
                     started_at: s.started_at,
+                    exercise_id: s.exercise_id,
+                    exercises: s.exercises,
                     session_metrics: {
                         thumb_rom: s.metrics.rom.thumb,
                         index_rom: s.metrics.rom.index,
@@ -440,7 +445,7 @@ export default function Progress() {
                         ring_peak_force: s.metrics.peak_force.ring,
                         pinky_peak_force: s.metrics.peak_force.pinky,
                         symmetry_score: s.metrics.symmetry_score,
-                        wrist_pitch_rom: s.metrics.wrist_pitch_rom,
+                        wrist_pitch_rom: s.metrics.wrist.pitch,
                         wrist_flexion: s.metrics.wrist.flexion,
                         wrist_extension: s.metrics.wrist.extension,
                         wrist_interior_roll: s.metrics.wrist.interior_roll,
@@ -450,8 +455,28 @@ export default function Progress() {
                     },
                 }));
 
-                const transformed = transformProgress(mockSessionsArray);
+                const options = Array.from(
+                    new Map(
+                        mockSessionsArray.map(s => [
+                            s.exercise_id,
+                            {
+                                id: s.exercise_id,
+                                name: s.exercises.name,
+                                slug: s.exercises.slug,
+                            }
+                        ])
+                    ).values()
+                );
+
+                setGameOptions(options);
+
+                const filtered = mockSessionsArray.filter(s =>
+                    selectedGame === "all" || s.exercise_id === selectedGame
+                );
+
+                const transformed = transformProgress(filtered);
                 const insights_data = computeInsights(transformed);
+
                 setData(transformed);
                 setInsights(insights_data);
                 setLoading(false);
@@ -476,6 +501,8 @@ export default function Progress() {
                     .select(`
                     id,
                     started_at,
+                    exercise_id,
+                    exercises ( name, slug ),
                     session_metrics (
                         thumb_rom,
                         index_rom,
@@ -507,10 +534,25 @@ export default function Progress() {
                 }
 
                 // Transform -> chart format
-                const valid = (sessionsData || []).filter(s => s.session_metrics);
+                const options = (sessionsData || [])
+                    .filter(s => s.exercise_id && s.exercises)
+                    .filter((s, index, arr) =>
+                        arr.findIndex(x => x.exercise_id === s.exercise_id) === index
+                    )
+                    .map(s => ({
+                        id: s.exercise_id,
+                        name: s.exercises.name,
+                        slug: s.exercises.slug,
+                    }));
+
+                setGameOptions(options);
+                const valid = (sessionsData || [])
+                    .filter(s => s.session_metrics)
+                    .filter(s =>
+                        selectedGame === "all" || s.exercise_id === selectedGame
+                    );
                 const transformed = transformProgress(valid);
                 const insights_data = computeInsights(transformed);
-
                 setData(transformed);
                 setInsights(insights_data);
             } catch (err) {
@@ -521,7 +563,7 @@ export default function Progress() {
             }
         }
         loadProgress();
-    }, [patientId, mode]);
+    }, [patientId, mode, selectedGame]);
 
     /* ---------- Loading ---------- */
     if (loading) {
@@ -551,6 +593,21 @@ export default function Progress() {
         <div className="progress-container">
             <h1>Progress</h1>
 
+            <div className="game-filter">
+                <label>Exercise:</label>
+                <select
+                    className="game-select"
+                    value={selectedGame}
+                    onChange={(e) => setSelectedGame(e.target.value)}
+                >
+                    <option value="all">All Exercises</option>
+                    {gameOptions.map(ex => (
+                        <option key={ex.id} value={ex.id}>
+                            {ex.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
             <div className="insights-card">
                 <h2>Performance Insights</h2>
 
@@ -568,6 +625,182 @@ export default function Progress() {
                 ) : (
                     <p>No insights available yet.</p>
                 )}
+                <div className="transparency-card">
+                    <h3>How Insights Are Generated</h3>
+
+                    <details>
+                        <summary>Overall Status</summary>
+                        <p>
+                            Determined by comparing trends in hand strength and symmetry between the first and most recent sessions.
+                        </p>
+                        <p className="why">
+                            Helps summarize whether recovery is improving, stable, or declining.
+                        </p>
+                    </details>
+
+                    <details>
+                        <summary>Hand Strength Trend</summary>
+                        <p>
+                            Calculated as the percentage change in average hand strength between the first and latest session.
+                        </p>
+                        <p className="why">
+                            Helps track strength improvement or decline over time.
+                        </p>
+                    </details>
+
+                    <details>
+                        <summary>Best Session</summary>
+                        <p>
+                            The session with the highest average hand strength value.
+                        </p>
+                        <p className="why">
+                            Highlights peak performance during recovery.
+                        </p>
+                    </details>
+
+                    <details>
+                        <summary>Session Consistency</summary>
+                        <p>
+                            Calculated as the average number of sessions completed per week.
+                        </p>
+                        <p className="why">
+                            Shows how regularly therapy is being performed.
+                        </p>
+                    </details>
+
+                    <details>
+                        <summary>Imbalance Detection</summary>
+                        <p>
+                            Triggered when the difference between the strongest and weakest finger exceeds a threshold,
+                            indicating uneven strength distribution.
+                        </p>
+                        <p className="why">
+                            Helps identify uneven strength across fingers.
+                        </p>
+                    </details>
+
+                    <details>
+                        <summary>Mobility Score</summary>
+                        <p>
+                            Computed as the average of wrist movement values in the most recent session.
+                        </p>
+                        <p className="why">
+                            Summarizes wrist mobility into a single value.
+                        </p>
+                    </details>
+
+                    <details>
+                        <summary>Recovery Score</summary>
+                        <p>
+                            A combined score based on strength, symmetry, and wrist mobility.
+                            Each component is normalized and weighted to produce a score out of 100.
+                        </p>
+                        <p className="why">
+                            Provides a quick summary of overall recovery progress.
+                        </p>
+                    </details>
+                </div>
+            </div>
+
+            <div className="transparency-card">
+                <h3>How Progress Is Calculated</h3>
+
+                <details>
+                    <summary>Hand Strength (Average)</summary>
+                    <p>
+                        Calculated as the average of peak force values across all five fingers for each session.
+                    </p>
+                    <p className="why">
+                        Helps track overall hand strength and effort across sessions.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Finger Flexion (Range)</summary>
+                    <p>
+                        Calculated as the average of maximum flexion values across all fingers.
+                    </p>
+                    <p className="why">
+                        Helps measure improvements in finger mobility and flexibility.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Finger Strength Distribution</summary>
+                    <p>
+                        Shows peak force for each finger individually to highlight strength balance or imbalance.
+                    </p>
+                    <p className="why">
+                        Helps identify weak fingers and strength imbalances.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Movement Symmetry</summary>
+                    <p>
+                        Measures how evenly force is distributed across fingers.
+                        Calculated as the ratio between the weakest and strongest finger force values.
+                    </p>
+                    <p className="why">
+                        Helps assess whether the hand is being used evenly during rehabilitation.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Wrist Movement</summary>
+                    <p>
+                        Includes flexion, extension, and rotation values derived from wrist sensor readings.
+                    </p>
+                    <p className="why">
+                        Helps evaluate wrist mobility and control during exercises.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Wrist Orientation</summary>
+                    <p>
+                        Represents the orientation of the wrist during movement.
+                        Derived from wrist sensor readings and tracked across sessions.
+                    </p>
+                    <p className="why">
+                        Helps monitor wrist positioning and movement patterns over time.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Session Consistency</summary>
+                    <p>
+                        Calculated as the number of sessions completed per week.
+                    </p>
+                    <p className="why">
+                        Helps measure adherence to rehabilitation routines.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Repetitions Detected</summary>
+                    <p>
+                        Counted when both a finger and thumb exceed a force threshold simultaneously,
+                        followed by release.
+                    </p>
+                    <p className="why">
+                        Helps quantify active engagement during therapy exercises.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Session Duration</summary>
+                    <p>
+                        Total time the system recorded activity during the session.
+                    </p>
+                    <p className="why">
+                        Helps track how long the user is actively training.
+                    </p>
+                </details>
+
+                <p className="transparency-note">
+                    All values are derived from glove sensor data and represent relative measurements used to track progress over time.
+                </p>
             </div>
 
             <div className="progress-tabs">
@@ -582,13 +815,12 @@ export default function Progress() {
                 ))}
             </div>
 
-
             {/* ---------------- OVERVIEW ---------------- */}
             {view === "overview" && (
                 <>
                     {/* Grip */}
                     <div className="graph-card">
-                        <h2>Grip Strength</h2>
+                        <h2>Hand Strength (Average)</h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.grip}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -618,7 +850,7 @@ export default function Progress() {
 
                     {/* Flexion */}
                     <div className="graph-card">
-                        <h2>Finger Flexion Range (°)</h2>
+                        <h2>Finger Flexion (Range)</h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.flexion}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -671,7 +903,7 @@ export default function Progress() {
             {view === "strength" && (
                 <>
                     <div className="graph-card">
-                        <h2>Grip Strength</h2>
+                        <h2>Hand Strength (Average)</h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.grip}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -700,7 +932,7 @@ export default function Progress() {
                     </div>
 
                     <div className="graph-card">
-                        <h2>Finger Strength Balance (All Fingers)</h2>
+                        <h2>Finger Strength Distribution (All Fingers)</h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.fingerBalance}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -738,7 +970,7 @@ export default function Progress() {
             {view === "mobility" && (
                 <>
                     <div className="graph-card">
-                        <h2>Finger Flexion Range (°)</h2>
+                        <h2>Finger Flexion (Range)</h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.flexion}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -767,7 +999,7 @@ export default function Progress() {
                     </div>
 
                     <div className="graph-card">
-                        <h2>Wrist Orientation (Pitch)</h2>
+                        <h2>Wrist Orientation</h2>
 
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.wristAll}>
@@ -807,7 +1039,7 @@ export default function Progress() {
                     </div>
 
                     <div className="graph-card">
-                        <h2>Wrist Range of Motion</h2>
+                        <h2>Wrist Movement Range</h2>
 
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.wristAll}>
@@ -850,7 +1082,7 @@ export default function Progress() {
             {view === "advanced" && (
                 <>
                     <div className="graph-card">
-                        <h2>Movement Symmetry</h2>
+                        <h2>Movement Symmetry Score</h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.symmetry}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -879,7 +1111,7 @@ export default function Progress() {
                     </div>
 
                     <div className="graph-card">
-                        <h2>Repetitions</h2>
+                        <h2>Repetitions Detected</h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={data.reps}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -937,12 +1169,12 @@ export default function Progress() {
                     </div>
 
                     <div className="graph-card">
-                        <h2>Strength vs Flexion</h2>
+                        <h2>Strength vs Flexion Relationship</h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <ScatterChart>
                                 <CartesianGrid />
-                                <XAxis type="number" dataKey="flexion" domain={["dataMin - 5", "dataMax + 5"]} name="Flexion (°)" />
-                                <YAxis type="number" dataKey="grip" domain={["dataMin - 5", "dataMax + 5"]} name="Grip Strength" />
+                                <XAxis type="number" dataKey="flexion" domain={["dataMin - 5", "dataMax + 5"]} name="Flexion (Range)" />
+                                <YAxis type="number" dataKey="grip" domain={["dataMin - 5", "dataMax + 5"]} name="Hand Strength" />
                                 <Tooltip cursor={{ strokeDasharray: "3 3" }} />
                                 <Scatter data={data.strengthVsFlexion} fill="#6c5ce7" dot={{ r: 5 }} />
                             </ScatterChart>

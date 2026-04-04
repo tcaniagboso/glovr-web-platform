@@ -13,18 +13,20 @@ import {
 } from "recharts";
 import "./SessionPage.css";
 
-function humanizeStatus(status) {
+function humanizeStatus(status, isFreeRoam) {
     switch (status) {
         case "pending":
-            return "Pending (waiting for Python)";
+            return isFreeRoam
+                ? "Connecting to glove..."
+                : "Waiting for VR to start session...";
         case "active":
             return "Active (recording)";
         case "stop_requested":
-            return "Stop requested";
+            return "Stopping session...";
         case "completed":
             return "Completed";
         default:
-            return status || "Ready";
+            return "Ready";
     }
 }
 
@@ -49,6 +51,7 @@ export default function PatientSession() {
     const timersRef = useRef([]);
 
     const currentGame = games.find(g => g.id === gameId);
+    const isFreeRoam = currentGame?.id === "free-roam";
 
     const isTherapist = !!patientId;
 
@@ -387,7 +390,7 @@ export default function PatientSession() {
             <div className="session-panel">
                 <div className="session-status">
                     <div className="label">Current Status</div>
-                    <div className="value">{humanizeStatus(status)}</div>
+                    <div className="value">{humanizeStatus(status, isFreeRoam)}</div>
                 </div>
 
                 {message && (
@@ -435,17 +438,17 @@ export default function PatientSession() {
 
                     <div className="live-grid">
                         <div className="live-box">
-                            <p>Grip</p>
+                            <p>Hand Strength</p>
                             <strong>{liveComputed.grip}</strong>
                         </div>
 
                         <div className="live-box">
                             <p>Flexion</p>
-                            <strong>{liveComputed.flexion}°</strong>
+                            <strong>{liveComputed.flexion}</strong>
                         </div>
 
                         <div className="live-box">
-                            <p>Pitch</p>
+                            <p>Wrist Orientation</p>
                             <strong>{liveComputed.pitch}</strong>
                         </div>
 
@@ -454,6 +457,10 @@ export default function PatientSession() {
                             <strong>{formatMovement(liveComputed.reps)}</strong>
                         </div>
                     </div>
+                    <p className="live-note">
+                        Values are updated in real time and represent approximate hand activity.
+                        Final metrics are computed after the session ends.
+                    </p>
                 </div>
             )}
 
@@ -475,6 +482,9 @@ export default function PatientSession() {
                             <Line dataKey="flexion" name="Flexion" stroke="#2e8b57" dot={false} />
                         </LineChart>
                     </ResponsiveContainer>
+                    <p className="live-note">
+                        Trends reflect recent activity and are smoothed for stability.
+                    </p>
                 </div>
             )}
         </div>

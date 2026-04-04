@@ -40,9 +40,44 @@
     color: #444;
 }
 
+.transparency-card {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 12px;
+    background: #f9f9f9;
+    margin-bottom: 32px;
+    border: 1px solid #eee;
+}
+
+.transparency-card h3 {
+    margin-bottom: 10px;
+}
+
+.transparency-card details {
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.transparency-card summary {
+    font-weight: 600;
+}
+
+.transparency-card p {
+    margin: 6px 0 0 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.transparency-note {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #777;
+}
+
 .progress-tabs {
     display: flex;
     gap: 10px;
+    margin-top: 8px;
     margin-bottom: 20px;
 }
 
@@ -88,4 +123,56 @@
     background: #4f46e5;
     color: white;
     border: none;
+}
+
+/* Container (wrap your select in a div with this class) */
+.game-filter {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Optional label */
+.game-filter label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+/* Select styling */
+.game-select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+/* Hover */
+.game-select:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+/* Focus (important for polish) */
+.game-select:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* Slightly nicer dropdown arrow (optional modern look) */
+.game-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%23374151' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5H5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 30px;
 }

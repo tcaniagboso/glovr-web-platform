@@ -104,3 +104,9 @@
 .live-box strong {
     font-size: 1.4rem;
 }
+
+.live-note {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #6b7280;
+}

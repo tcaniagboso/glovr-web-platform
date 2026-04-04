@@ -266,7 +266,7 @@ export default function SessionDetail() {
 
             {/* ROM */}
             <div className="card">
-                <h2>Finger Flexion</h2>
+                <h2>Finger Flexion (Range)</h2>
                 <div className="grid">
                     {session.metrics?.rom &&
                         Object.entries(session.metrics.rom).map(([finger, value]) => (
@@ -295,7 +295,7 @@ export default function SessionDetail() {
 
             {/* Peak Force */}
             <div className="card">
-                <h2>Peak Force</h2>
+                <h2>Peak Force (Relative)</h2>
                 <div className="grid">
                     {session.metrics?.peak_force &&
                         Object.entries(session.metrics.peak_force).map(([finger, value]) => (
@@ -306,6 +306,72 @@ export default function SessionDetail() {
                         ))}
                 </div>
             </div>
+            {/* Metrics Explanation */}
+            <div className="card transparent-card">
+                <h2>How Metrics Are Computed</h2>
+
+                <details>
+                    <summary>Finger Range of Motion</summary>
+                    <p>
+                        Calculated as the maximum flex value recorded for each finger across the session.
+                    </p>
+                    <p className="why">
+                        Helps measure improvements in finger mobility and flexibility.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Peak Force (Per Finger)</summary>
+                    <p>
+                        Calculated as the peak force recorded for each finger during the session.
+                    </p>
+                    <p className="why">
+                        Helps identify finger strength and detect weaker fingers.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Wrist Range of Motion</summary>
+                    <p>
+                        Computed from the difference between maximum and minimum wrist orientation values.
+                    </p>
+                    <p className="why">
+                        Helps evaluate wrist mobility and control during movement.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Repetitions</summary>
+                    <p>
+                        Detected when both a finger and the thumb exceed a force threshold simultaneously,
+                        followed by release.
+                    </p>
+                    <p className="why">
+                        Helps quantify active engagement and exercise completion.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Symmetry Score</summary>
+                    <p>
+                        Calculated based on the balance between finger force values across the hand.
+                    </p>
+                    <p className="why">
+                        Helps assess how evenly the hand is being used during movement.
+                    </p>
+                </details>
+
+                <details>
+                    <summary>Duration</summary>
+                    <p>
+                        Measured from when recording begins to when it ends.
+                    </p>
+                    <p className="why">
+                        Helps track how long the user is actively engaged in therapy.
+                    </p>
+                </details>
+            </div>
+
             {/* Replay */}
             {replayData.length > 0 && (
                 <div className="card">
@@ -316,10 +382,10 @@ export default function SessionDetail() {
                     </button>
 
                     <div style={{ marginTop: "10px" }}>
-                        <p>Grip: {replayComputed?.grip ?? "-"}</p>
-                        <p>Flexion: {replayComputed?.flexion ?? "-"}°</p>
-                        <p>Pitch: {replayComputed?.pitch ?? "-"}</p>
-                        <p>Movement Intensity (est): {formatMovement(movement)}</p>
+                        <p>Hand Strength (average force): {replayComputed?.grip ?? "-"}</p>
+                        <p>Finger Flexion (range): {replayComputed?.flexion ?? "-"}°</p>
+                        <p>Wrist Orientation (hand pitch): {replayComputed?.pitch ?? "-"}</p>
+                        <p>Movement Intensity: {formatMovement(movement)}</p>
                     </div>
                     <div style={{ width: "100%", background: "#eee", height: "6px" }}>
                         <div
@@ -330,8 +396,35 @@ export default function SessionDetail() {
                             }}
                         />
                     </div>
+                    <div className="transparency-card">
+                        <h2>Replay Metrics (Live Estimation)</h2>
+
+                        <p>
+                            During replay, metrics are estimated in real-time from individual sensor readings.
+                        </p>
+
+                        <ul>
+                            <li><strong>Hand Strength (average force):</strong> Average force across all fingers at a given moment.</li>
+                            <li><strong>Finger Flexion (range):</strong> Average finger bend at that moment.</li>
+                            <li><strong>Wrist Orientation (hand pitch):</strong> Wrist orientation at that moment.</li>
+                            <li><strong>Movement Intensity:</strong> Change in wrist position between frames.</li>
+                        </ul>
+
+                        <p style={{ fontSize: "0.9em", opacity: 0.7 }}>
+                            These are approximate real-time values and may differ from final session metrics.
+                        </p>
+                    </div>
                 </div>
             )}
+            {/* Data Processing Explanation */}
+            <div className="transparency-card">
+                <h2>Data Processing</h2>
+
+                <p>
+                    Raw glove sensor data is smoothed using an exponential moving average (EMA)
+                    to reduce noise and improve stability before computing metrics.
+                </p>
+            </div>
             {/* Notes */}
             <div className="card">
                 <h2>Therapist Notes</h2>
