@@ -233,11 +233,12 @@ export default function Profile() {
 
                 {/* Actions */}
                 <div className="profile-actions">
+                    {/* TODO: Implement edit profile and delete profile features */}
                     <button className="edit-profile-btn" disabled>
-                        Edit Profile (Coming Soon)
+                        Edit Profile
                     </button>
                     <button className="delete-profile-btn" disabled>
-                        Delete Profile (Coming Soon)
+                        Delete Profile
                     </button>
                 </div>
 
