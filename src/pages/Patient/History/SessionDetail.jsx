@@ -383,7 +383,7 @@ export default function SessionDetail() {
 
                     <div style={{ marginTop: "10px" }}>
                         <p>Hand Strength (average force): {replayComputed?.grip ?? "-"}</p>
-                        <p>Finger Flexion (range): {replayComputed?.flexion ?? "-"}°</p>
+                        <p>Finger Flexion (range): {replayComputed?.flexion ?? "-"}</p>
                         <p>Wrist Orientation (hand pitch): {replayComputed?.pitch ?? "-"}</p>
                         <p>Movement Intensity: {formatMovement(movement)}</p>
                     </div>
