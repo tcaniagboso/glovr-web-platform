@@ -1,16 +1,19 @@
 .patient-session-container {
     padding: 2rem;
-    max-width: 720px;
+    max-width: 1200px;
+    /* expanded from 720px */
+    margin: 0 auto;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
         Roboto, Oxygen, Ubuntu, Cantarell,
         'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
+/* SESSION PANEL */
 .session-panel {
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    padding: 1.5rem;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    padding: 1.75rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
@@ -23,11 +26,12 @@
 }
 
 .session-status .value {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #2b2b2b;
 }
 
+/* BUTTONS */
 .session-actions {
     display: flex;
     gap: 0.75rem;
@@ -39,7 +43,7 @@
     border: none;
     color: white;
     font-weight: 700;
-    padding: 0.7rem 1.1rem;
+    padding: 0.75rem 1.2rem;
     border-radius: 10px;
     cursor: pointer;
 }
@@ -54,7 +58,7 @@
     border: none;
     color: white;
     font-weight: 700;
-    padding: 0.7rem 1.1rem;
+    padding: 0.75rem 1.2rem;
     border-radius: 10px;
     cursor: pointer;
 }
@@ -64,6 +68,7 @@
     cursor: not-allowed;
 }
 
+/* STATUS */
 .status-message {
     margin: 0;
     font-size: 0.95rem;
@@ -75,38 +80,75 @@
     font-weight: 600;
 }
 
-.live-panel {
-    margin-top: 20px;
-    padding: 16px;
-    background: #f9fafb;
-    border-radius: 10px;
+/* LIVE LAYOUT (metrics + chart side-by-side) */
+.live-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
+/* LIVE PANEL */
+.live-panel {
+    margin-top: 24px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 14px;
+    border: 1px solid #eee;
+}
+
+/* LIVE GRID (bigger + wider) */
 .live-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(4, 1fr);
+    /* 4 metrics in one row */
+    gap: 16px;
 }
 
+/* METRIC BOX */
 .live-box {
     background: white;
-    padding: 10px;
-    border-radius: 8px;
+    padding: 20px;
+    border-radius: 12px;
     text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: transform 0.15s ease;
 }
 
+.live-box:hover {
+    transform: translateY(-2px);
+}
+
+/* LABEL */
 .live-box p {
     margin: 0;
-    font-size: 0.9rem;
-    color: #666;
+    font-size: 0.95rem;
+    color: #6b7280;
 }
 
+/* VALUE (BIG IMPACT) */
 .live-box strong {
-    font-size: 1.4rem;
+    font-size: 2.2rem;
+    /* bigger numbers */
+    font-weight: 800;
+    display: block;
+    margin-top: 6px;
+    color: #111827;
 }
 
+/* NOTE */
 .live-note {
-    margin-top: 10px;
+    margin-top: 12px;
     font-size: 0.85rem;
     color: #6b7280;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .live-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .live-layout {
+        grid-template-columns: 1fr;
+    }
 }

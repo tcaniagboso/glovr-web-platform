@@ -9,7 +9,8 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    ResponsiveContainer
+    ResponsiveContainer,
+    Legend,
 } from "recharts";
 import "./SessionPage.css";
 
@@ -468,17 +469,30 @@ export default function PatientSession() {
                 <div className="live-panel">
                     <h2>Live Trend</h2>
 
-                    <ResponsiveContainer width="100%" height={200}>
+                    <ResponsiveContainer width="100%" height={250}>
                         <LineChart data={liveHistory}>
                             <CartesianGrid strokeDasharray="3 3" />
 
                             <XAxis
                                 dataKey="t"
-                                tickFormatter={() => ""}
+                                label={{ value: "Time (live)", position: "insideBottom", offset: -5 }}
                             />
-                            <YAxis domain={["dataMin - 2", "dataMax + 2"]} allowDecimals={false} />
 
-                            <Line dataKey="grip" name="Grip" stroke="#6a5acd" dot={false} />
+                            <YAxis
+                                label={{ value: "Sensor Value", angle: -90, position: "insideLeft" }}
+                                domain={["dataMin - 2", "dataMax + 2"]}
+                                allowDecimals={false}
+                            />
+
+                            <Legend
+                                verticalAlign="top"
+                                height={36}
+                                wrapperStyle={{
+                                    fontSize: "0.9rem",
+                                    fontWeight: 600
+                                }}
+                            />
+                            <Line dataKey="grip" name="Hand Strength" stroke="#6a5acd" dot={false} />
                             <Line dataKey="flexion" name="Flexion" stroke="#2e8b57" dot={false} />
                         </LineChart>
                     </ResponsiveContainer>
