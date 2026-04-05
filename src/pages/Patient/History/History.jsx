@@ -49,7 +49,7 @@ export default function History() {
                     ended_at,
                     status,
                     exercises (name),
-                    session_metrics (duration_seconds)
+                    session_metrics!inner (duration_seconds)
                 `)
                 .eq("patient_id", targetId)
                 .eq("status", "completed")
