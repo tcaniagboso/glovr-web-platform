@@ -98,3 +98,63 @@
     color: #6b7280;
     font-style: italic;
 }
+
+/* Replay metrics spacing */
+.replay-metrics {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.replay-metrics p {
+    background: #f3f4f6;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* Replay graph container */
+.replay-chart {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-left: 4px solid #4f46e5;
+}
+
+/* Graph title */
+.replay-chart h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #374151;
+}
+
+/* Progress bar spacing */
+.replay-progress {
+    margin-top: 10px;
+}
+
+/* Button polish */
+.card button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.card button:hover {
+    background: #4338ca;
+}
+
+/* Make cards breathe a bit more */
+.card {
+    transition: transform 0.15s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}

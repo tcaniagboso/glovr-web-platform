@@ -3,6 +3,15 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../../supabaseClient";
 import { mockSessionDetails, mockReplayData } from "../../../mocks/sessions";
 import { formatMovement, formatDuration } from "../../../utils/utils";
+import {
+    ResponsiveContainer,
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Legend
+} from "recharts";
 import "./SessionDetail.css";
 
 export default function SessionDetail() {
@@ -22,6 +31,7 @@ export default function SessionDetail() {
     const [replayIndex, setReplayIndex] = useState(0);
     const [playing, setPlaying] = useState(false);
     const [speed, setSpeed] = useState(500);
+    const [chartData, setChartData] = useState([]);
 
     async function handleSaveNotes() {
         const { error } = await supabase
@@ -192,6 +202,7 @@ export default function SessionDetail() {
 
                     // reset state
                     setPlaying(false);
+                    setChartData([]);
                     return 0;
                 }
                 return i + 1;
@@ -200,6 +211,19 @@ export default function SessionDetail() {
 
         return () => clearInterval(interval);
     }, [playing, replayData, speed]);
+
+    useEffect(() => {
+        if (!playing || !replayComputed) return;
+
+        setChartData(prev => [
+            ...prev,
+            {
+                t: replayIndex,
+                grip: replayComputed.grip,
+                flexion: replayComputed.flexion
+            }
+        ]);
+    }, [replayIndex, playing]);
 
     const replayPoint = replayData[replayIndex];
 
@@ -381,13 +405,56 @@ export default function SessionDetail() {
                         {playing ? "Pause" : "Play"}
                     </button>
 
-                    <div style={{ marginTop: "10px" }}>
+                    <div className="replay-metrics">
                         <p>Hand Strength (average force): {replayComputed?.grip ?? "-"}</p>
                         <p>Finger Flexion (range): {replayComputed?.flexion ?? "-"}</p>
                         <p>Wrist Orientation (hand pitch): {replayComputed?.pitch ?? "-"}</p>
                         <p>Movement Intensity: {formatMovement(movement)}</p>
                     </div>
-                    <div style={{ width: "100%", background: "#eee", height: "6px" }}>
+                    <div className="replay-chart">
+                        <h3>Replay Trend</h3>
+
+                        <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+
+                                <XAxis
+                                    dataKey="t"
+                                    label={{ value: "Time (replay)", position: "insideBottom", offset: -5 }}
+                                />
+
+                                <YAxis
+                                    label={{ value: "Sensor Value", angle: -90, position: "insideLeft" }}
+                                    domain={["dataMin - 2", "dataMax + 2"]}
+                                    allowDecimals={false}
+                                />
+
+                                <Legend
+                                    verticalAlign="top"
+                                    height={36}
+                                    wrapperStyle={{
+                                        fontSize: "0.9rem",
+                                        fontWeight: 600
+                                    }}
+                                />
+
+                                <Line
+                                    dataKey="grip"
+                                    name="Hand Strength"
+                                    stroke="#6a5acd"
+                                    dot={false}
+                                />
+
+                                <Line
+                                    dataKey="flexion"
+                                    name="Flexion"
+                                    stroke="#2e8b57"
+                                    dot={false}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="replay-progress" style={{ width: "100%", background: "#eee", height: "6px" }}>
                         <div
                             style={{
                                 width: `${percent}%`,
